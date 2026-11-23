@@ -1,0 +1,2038 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Từ Vựng CN">
+  <title>Flashcard Tiếng Trung</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+  <script src="https://unpkg.com/pinyin-pro@3.29.5/dist/index.js" defer></script>
+  <style>
+    :root {
+      --bg: #f1f5f9;
+      --surface: #ffffff;
+      --surface-alt: #f8fafc;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --accent: #2563eb;
+      --accent-soft: #eff6ff;
+      --female: #db2777;
+      --female-bg: #fdf2f8;
+      --female-border: #fbcfe8;
+      --male: #0284c7;
+      --male-bg: #f0f9ff;
+      --male-border: #bae6fd;
+      --good: #059669;
+      --good-bg: #ecfdf5;
+      --warn: #d97706;
+      --warn-bg: #fffbeb;
+      --tone1: #2563eb;
+      --tone2: #059669;
+      --tone3: #d97706;
+      --tone4: #dc2626;
+      --tone5: #64748b;
+      --shadow: 0 12px 32px rgba(15, 23, 42, 0.08);
+    }
+
+    html[data-theme="dark"] {
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --surface-alt: #0f172a;
+      --border: #334155;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent: #38bdf8;
+      --accent-soft: rgba(56, 189, 248, 0.14);
+      --female: #f472b6;
+      --female-bg: rgba(244, 114, 182, 0.14);
+      --female-border: rgba(244, 114, 182, 0.35);
+      --male: #38bdf8;
+      --male-bg: rgba(56, 189, 248, 0.14);
+      --male-border: rgba(56, 189, 248, 0.35);
+      --good: #34d399;
+      --good-bg: rgba(52, 211, 153, 0.14);
+      --warn: #fbbf24;
+      --warn-bg: rgba(251, 191, 36, 0.14);
+      --tone1: #60a5fa;
+      --tone2: #34d399;
+      --tone3: #fbbf24;
+      --tone4: #f87171;
+      --tone5: #94a3b8;
+      --shadow: 0 14px 36px rgba(0, 0, 0, 0.45);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: calc(10px + env(safe-area-inset-top)) 12px calc(18px + env(safe-area-inset-bottom));
+      transition: background 0.2s ease, color 0.2s ease;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 680px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    /* Top Header */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      min-width: 0;
+    }
+
+    .brand-badge {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background: #0f172a;
+      color: #38bdf8;
+      border: 1.5px solid #38bdf8;
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .brand-text h1 {
+      font-size: 16px;
+      font-weight: 700;
+      line-height: 1.2;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .brand-text .sub {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .icon-btn {
+      min-width: 40px;
+      min-height: 40px;
+      padding: 0 10px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+    }
+
+    .icon-btn:active {
+      transform: scale(0.97);
+    }
+
+    /* Progress Bar */
+    .progress-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .progress-track {
+      flex: 1;
+      height: 7px;
+      background: var(--border);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent), var(--good));
+      border-radius: 999px;
+      transition: width 0.25s ease;
+    }
+
+    /* Controls Card */
+    .controls {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .row {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .seg {
+      display: flex;
+      background: var(--surface-alt);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 2px;
+      gap: 2px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .seg-btn {
+      flex: 1;
+      min-height: 36px;
+      padding: 4px 6px;
+      border: none;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .seg-btn.active {
+      background: var(--surface);
+      color: var(--accent);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    }
+
+    select, input[type="search"] {
+      min-height: 38px;
+      padding: 0 10px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--surface-alt);
+      color: var(--text);
+      font-size: 13px;
+      font-family: inherit;
+      outline: none;
+    }
+
+    select {
+      flex: 1.2;
+      min-width: 140px;
+    }
+
+    input[type="search"] {
+      flex: 1;
+      min-width: 120px;
+    }
+
+    select:focus, input[type="search"]:focus {
+      border-color: var(--accent);
+    }
+
+    /* Flashcard Stage */
+    .stage {
+      perspective: 1200px;
+      width: 100%;
+    }
+
+    .flashcard {
+      position: relative;
+      width: 100%;
+      min-height: 350px;
+      transform-style: preserve-3d;
+      transition: transform 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .flashcard.flipped {
+      transform: rotateY(180deg);
+    }
+
+    .face {
+      position: absolute;
+      inset: 0;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+      padding: 16px 18px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .face-back {
+      transform: rotateY(180deg);
+      overflow-y: auto;
+    }
+
+    .card-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11.5px;
+      font-weight: 600;
+      padding: 4px 9px;
+      border-radius: 999px;
+      background: var(--surface-alt);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      max-width: 100%;
+    }
+
+    .pill.phonetic {
+      background: var(--accent-soft);
+      border-color: transparent;
+      color: var(--accent);
+    }
+
+    .pill.status-known {
+      background: var(--good-bg);
+      color: var(--good);
+      border-color: transparent;
+    }
+
+    .pill.status-review {
+      background: var(--warn-bg);
+      color: var(--warn);
+      border-color: transparent;
+    }
+
+    .card-center {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      gap: 10px;
+      padding: 6px 0;
+    }
+
+    .hanzi-main {
+      font-family: "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+      font-size: clamp(46px, 12vw, 72px);
+      font-weight: 700;
+      line-height: 1.15;
+      letter-spacing: 2px;
+      word-break: keep-all;
+    }
+
+    .hanzi-back {
+      font-family: "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+      font-size: clamp(34px, 8vw, 48px);
+      font-weight: 700;
+      line-height: 1.15;
+    }
+
+    .listen-prompt {
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--text-muted);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .listen-icon {
+      width: 68px;
+      height: 68px;
+      border-radius: 50%;
+      background: var(--accent-soft);
+      color: var(--accent);
+      display: grid;
+      place-items: center;
+      font-size: 30px;
+    }
+
+    .meaning-front {
+      font-size: clamp(22px, 5vw, 30px);
+      font-weight: 700;
+      line-height: 1.35;
+      padding: 0 8px;
+    }
+
+    .pinyin-line {
+      font-size: clamp(20px, 4.5vw, 26px);
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .t1 { color: var(--tone1); }
+    .t2 { color: var(--tone2); }
+    .t3 { color: var(--tone3); }
+    .t4 { color: var(--tone4); }
+    .t5 { color: var(--tone5); }
+
+    .meaning-back {
+      font-size: clamp(19px, 4.2vw, 23px);
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.35;
+    }
+
+    .example-box {
+      width: 100%;
+      background: var(--surface-alt);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 12px;
+      text-align: left;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .example-text {
+      font-size: 14px;
+      line-height: 1.45;
+      color: var(--text);
+    }
+
+    .example-text .ex-vi {
+      display: block;
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .ex-play {
+      min-width: 38px;
+      min-height: 38px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--accent);
+      font-size: 16px;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    /* Voice Bar inside card */
+    .voice-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .voice-btn {
+      min-height: 44px;
+      padding: 8px 16px;
+      border-radius: 12px;
+      font-size: 14.5px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: transform 0.1s ease, box-shadow 0.15s ease;
+    }
+
+    .voice-btn:active {
+      transform: scale(0.96);
+    }
+
+    .voice-btn.female {
+      background: var(--female-bg);
+      color: var(--female);
+      border: 1.5px solid var(--female-border);
+    }
+
+    .voice-btn.male {
+      background: var(--male-bg);
+      color: var(--male);
+      border: 1.5px solid var(--male-border);
+    }
+
+    .voice-btn.speaking {
+      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.35);
+    }
+
+    .audio-tag {
+      font-size: 10.5px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 6px;
+      background: var(--surface-alt);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+    }
+
+    .flip-hint {
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* Tone legend */
+    .tone-legend {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      font-size: 11px;
+      font-weight: 600;
+      flex-wrap: wrap;
+    }
+
+    /* Bottom Action Bar */
+    .nav-bar {
+      display: grid;
+      grid-template-columns: 1fr 1.15fr 1.15fr 1fr;
+      gap: 8px;
+    }
+
+    .act-btn {
+      min-height: 48px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      font-size: 13.5px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      padding: 0 8px;
+    }
+
+    .act-btn:active { transform: scale(0.97); }
+    .act-btn.review { background: var(--warn-bg); color: var(--warn); border-color: transparent; }
+    .act-btn.known { background: var(--good-bg); color: var(--good); border-color: transparent; }
+
+    /* Audio Settings Strip */
+    .audio-strip {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+      font-size: 12.5px;
+      color: var(--text-muted);
+      padding: 4px 2px;
+    }
+
+    .chip-group {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex-wrap: wrap;
+    }
+
+    .chip {
+      min-height: 32px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-muted);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .chip.active {
+      background: var(--accent-soft);
+      color: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .sync-box {
+      background: var(--surface-alt);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+    }
+
+    .sync-box-title {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    input[type="url"] {
+      width: 100%;
+      min-height: 40px;
+      padding: 0 10px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      font-size: 13px;
+      font-family: inherit;
+      outline: none;
+    }
+
+    input[type="url"]:focus {
+      border-color: var(--accent);
+    }
+
+    .check-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--text-muted);
+      cursor: pointer;
+    }
+
+    .primary-btn {
+      width: 100%;
+      min-height: 42px;
+      border-radius: 11px;
+      border: none;
+      background: var(--accent);
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .primary-btn:disabled {
+      opacity: 0.65;
+      cursor: wait;
+    }
+
+    .sync-status {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    .sync-status.err {
+      color: var(--tone4);
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .spinning {
+      display: inline-block;
+      animation: spin 0.9s linear infinite;
+    }
+
+    /* Modal / Drawer */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.55);
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+      z-index: 50;
+      padding: 12px;
+    }
+
+    .modal-backdrop.open { display: flex; }
+
+    @media (min-width: 640px) {
+      .modal-backdrop { align-items: center; }
+    }
+
+    .modal {
+      width: 100%;
+      max-width: 480px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 18px;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .modal-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-head h2 { font-size: 17px; }
+
+    .menu-btn {
+      width: 100%;
+      min-height: 44px;
+      padding: 10px 14px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--surface-alt);
+      color: var(--text);
+      font-size: 14px;
+      font-weight: 600;
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .menu-btn.danger { color: var(--tone4); }
+
+    .empty-state {
+      min-height: 260px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 24px;
+      gap: 10px;
+      color: var(--text-muted);
+    }
+
+    .toast {
+      position: fixed;
+      bottom: calc(20px + env(safe-area-inset-bottom));
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: #0f172a;
+      color: #f8fafc;
+      padding: 9px 16px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.22s ease;
+      z-index: 60;
+      max-width: 90vw;
+      text-align: center;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <!-- Header -->
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-badge">汉</div>
+        <div class="brand-text">
+          <h1>Flashcard Tiếng Trung</h1>
+          <div class="sub" id="deckStats">Đang tải...</div>
+        </div>
+      </div>
+      <div class="top-actions">
+        <button class="icon-btn" id="quickSyncBtn" title="Đồng bộ từ Google Drive / Sheets">🔄</button>
+        <button class="icon-btn" id="themeBtn" title="Đổi giao diện Sáng/Tối">☀️</button>
+        <button class="icon-btn" id="menuBtn" title="Menu & Đồng bộ dữ liệu">☰</button>
+      </div>
+    </header>
+
+    <!-- Progress -->
+    <div class="progress-wrap">
+      <span id="counterText">0 / 0</span>
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      <span id="masteredText">Đã thuộc 0</span>
+    </div>
+
+    <!-- Controls -->
+    <section class="controls">
+      <div class="row">
+        <div class="seg" role="group" aria-label="Chế độ sắp xếp">
+          <button class="seg-btn active" data-sort="phonetic">🔊 Gần âm</button>
+          <button class="seg-btn" data-sort="random">🎲 Ngẫu nhiên</button>
+          <button class="seg-btn" data-sort="lesson">📚 Theo bài</button>
+          <button class="seg-btn" data-sort="unlearned">🎯 Chưa thuộc</button>
+        </div>
+        <button class="icon-btn" id="reshuffleBtn" title="Trộn ngẫu nhiên lại" style="display:none">🔀</button>
+      </div>
+
+      <div class="row">
+        <div class="seg" role="group" aria-label="Mặt trước thẻ">
+          <button class="seg-btn active" data-front="hanzi">Chữ Hán</button>
+          <button class="seg-btn" data-front="listen">Chỉ nghe</button>
+          <button class="seg-btn" data-front="meaning">Tiếng Việt</button>
+        </div>
+      </div>
+
+      <div class="row">
+        <select id="groupSelect" aria-label="Lọc theo bài học"></select>
+        <input type="search" id="searchInput" placeholder="Tìm chữ Hán, pinyin, nghĩa...">
+      </div>
+    </section>
+
+    <!-- Card Stage -->
+    <main class="stage" id="stage">
+      <div class="flashcard" id="flashcard" tabindex="0">
+        <!-- Front -->
+        <div class="face face-front">
+          <div class="card-meta">
+            <span class="pill" id="frontGroup">Nhóm</span>
+            <div style="display:flex;gap:6px;align-items:center;">
+              <span class="pill phonetic" id="frontPhonetic" style="display:none"></span>
+              <span class="pill" id="frontStatus">Mới</span>
+            </div>
+          </div>
+
+          <div class="card-center" id="frontBody"></div>
+
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <div class="voice-bar" onclick="event.stopPropagation()">
+              <button class="voice-btn female" data-speak="female">👩 Nữ</button>
+              <button class="voice-btn male" data-speak="male">👨 Nam</button>
+              <span class="audio-tag" id="audioBadgeFront">HD</span>
+            </div>
+            <div class="flip-hint">Chạm vào thẻ để lật • Vuốt trái/phải để chuyển</div>
+          </div>
+        </div>
+
+        <!-- Back -->
+        <div class="face face-back">
+          <div class="card-meta">
+            <span class="pill" id="backGroup">Nhóm</span>
+            <span class="pill" id="backStatus">Mới</span>
+          </div>
+
+          <div class="card-center">
+            <div class="hanzi-back" id="backHanzi"></div>
+            <div class="pinyin-line" id="backPinyin"></div>
+            <div class="meaning-back" id="backMeaning"></div>
+            <div class="example-box" id="exampleBox" onclick="event.stopPropagation()">
+              <div class="example-text" id="exampleText"></div>
+              <button class="ex-play" id="exPlayBtn" title="Nghe câu ví dụ">🔊</button>
+            </div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <div class="voice-bar" onclick="event.stopPropagation()">
+              <button class="voice-btn female" data-speak="female">👩 Nữ</button>
+              <button class="voice-btn male" data-speak="male">👨 Nam</button>
+              <span class="audio-tag" id="audioBadgeBack">HD</span>
+            </div>
+            <div class="tone-legend">
+              <span class="t1">1: Ngang (ā)</span>
+              <span class="t2">2: Sắc (á)</span>
+              <span class="t3">3: Hỏi/Ngã (ǎ)</span>
+              <span class="t4">4: Nặng/Xuống (à)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="empty-state" id="emptyState" style="display:none">
+        <div style="font-size:32px">🔍</div>
+        <div style="font-weight:700;color:var(--text)">Không tìm thấy thẻ phù hợp</div>
+        <div style="font-size:13px">Hãy thử đổi bộ lọc nhóm hoặc xóa từ khóa tìm kiếm.</div>
+      </div>
+    </main>
+
+    <!-- Action Bar -->
+    <section class="nav-bar">
+      <button class="act-btn" id="prevBtn">← Trước</button>
+      <button class="act-btn review" id="reviewBtn">↻ Chưa nhớ</button>
+      <button class="act-btn known" id="knownBtn">✓ Đã thuộc</button>
+      <button class="act-btn" id="nextBtn">Tiếp →</button>
+    </section>
+
+    <!-- Audio Controls Strip -->
+    <section class="audio-strip">
+      <div class="chip-group">
+        <span>Tốc độ:</span>
+        <button class="chip" data-speed="0.75">0.75×</button>
+        <button class="chip active" data-speed="1">1.0×</button>
+        <button class="chip" data-speed="1.2">1.2×</button>
+      </div>
+      <div class="chip-group">
+        <button class="chip" id="autoPlayBtn">🔇 Tự đọc: Tắt</button>
+      </div>
+    </section>
+  </div>
+
+  <!-- Menu Modal -->
+  <div class="modal-backdrop" id="modalBackdrop">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" style="max-height:90dvh;overflow-y:auto;">
+      <div class="modal-head">
+        <h2 id="modalTitle">Đồng bộ & Dữ liệu</h2>
+        <button class="icon-btn" id="closeModalBtn">✕</button>
+      </div>
+
+      <div class="sync-box">
+        <div class="sync-box-title">☁️ Đồng bộ trực tuyến (Google Drive .md / Google Sheets)</div>
+        <input type="url" id="syncUrlInput" placeholder="Dán link Apps Script (.md) hoặc Google Sheets CSV...">
+        <label class="check-row">
+          <input type="checkbox" id="autoSyncCheck">
+          <span>Tự động đồng bộ từ mới mỗi khi mở app</span>
+        </label>
+        <button class="primary-btn" id="saveSyncBtn">🔄 Lưu link & Đồng bộ ngay</button>
+        <div class="sync-status" id="syncStatusText">Chưa cấu hình link đồng bộ.</div>
+      </div>
+
+      <input type="file" id="mdFileInput" accept=".md,.csv,.txt,text/markdown,text/csv,text/plain" style="display:none">
+      <button class="menu-btn" id="importMdBtn"><span>📄 Nạp file .md hoặc .csv từ máy</span><span>→</span></button>
+      <button class="menu-btn" id="exportMdBtn"><span>💾 Xuất bộ từ hiện tại ra file .md</span><span>→</span></button>
+      <button class="menu-btn" id="restoreDeckBtn"><span>♻️ Khôi phục bộ từ gốc tích hợp</span><span>→</span></button>
+      <button class="menu-btn danger" id="resetProgressBtn"><span>🗑️ Xóa tiến độ Đã thuộc / Chưa nhớ</span><span>→</span></button>
+      <div style="font-size:12px;color:var(--text-muted);line-height:1.45">
+        <strong>Phím tắt máy tính:</strong> <code>Space</code> lật thẻ • <code>← / →</code> chuyển thẻ • <code>1</code> giọng Nữ • <code>2</code> giọng Nam • <code>K</code> Đã thuộc • <code>U</code> Chưa nhớ.
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    /* __VOCAB_DATA_START__ */
+    const INITIAL_VOCAB = [{"id":1,"audioId":"w_df1fd91011","hanzi":"你","pinyin":"nǐ","meaning":"bạn, anh, chị (ngôi thứ 2)","example":"你好吗？ (Bạn khỏe không?)","group":"Bài 1 & 2 (Slide PPTX)"},{"id":2,"audioId":"w_ac2c8f13c6","hanzi":"好","pinyin":"hǎo","meaning":"tốt, khỏe, đẹp, được","example":"很好！ (Rất tốt!)","group":"Bài 1 & 2 (Slide PPTX)"},{"id":3,"audioId":"w_7eca689f0d","hanzi":"你好","pinyin":"nǐ hǎo","meaning":"xin chào","example":"你好，大卫！ (Chào bạn, David!)","group":"Bài 1 & 2 (Slide PPTX)"},{"id":4,"audioId":"w_7941da94db","hanzi":"一","pinyin":"yī","meaning":"số 1 (một)","example":"我要一个。 (Tôi muốn một cái.)","group":"Bài 1 & 2 (Slide PPTX)"},{"id":5,"audioId":"w_2d8be272c9","hanzi":"二","pinyin":"èr","meaning":"số 2 (hai)","example":"二月 (Tháng hai)","group":"Bài 1 & 2 (Slide PPTX)"},{"id":6,"audioId":"w_e662ff59a0","hanzi":"三","pinyin":"sān","meaning":"số 3 (ba)","example":"三口人 (Ba người)","group":"Bài 1 & 2 (Slide PPTX)"},{"id":7,"audioId":"w_21716cf311","hanzi":"四","pinyin":"sì","meaning":"số 4 (bốn)","example":"星期四 (Thứ Năm)","group":"Bài 1 & 2 (Slide PPTX)"},{"id":8,"audioId":"w_1fcc29d077","hanzi":"五","pinyin":"wǔ","meaning":"số 5 (năm)","example":"五分钟 (Năm phút)","group":"Bài 1 & 2 (Slide PPTX)"},{"id":9,"audioId":"w_61b453523d","hanzi":"六","pinyin":"liù","meaning":"số 6 (sáu)","example":"六点半 (Sáu giờ rưỡi)","group":"Bài 1 & 2 (Slide PPTX)"},{"id":10,"audioId":"w_aad6914f8f","hanzi":"七","pinyin":"qī","meaning":"số 7 (bảy)","example":"七点一刻 (Bảy giờ mười lăm)","group":"Bài 1 & 2 (Slide PPTX)"},{"id":11,"audioId":"w_edf1acd5c6","hanzi":"八","pinyin":"bā","meaning":"số 8 (tám)","example":"八点上课 (Tám giờ vào học)","group":"Bài 1 & 2 (Slide PPTX)"},{"id":12,"audioId":"w_9b4851f85d","hanzi":"九","pinyin":"jiǔ","meaning":"số 9 (chín)","example":"九号楼 (Tòa nhà số 9)","group":"Bài 1 & 2 (Slide PPTX)"},{"id":13,"audioId":"w_181245720b","hanzi":"十","pinyin":"shí","meaning":"số 10 (mười)","example":"十月 (Tháng mười)","group":"Bài 1 & 2 (Slide PPTX)"},{"id":14,"audioId":"w_0bff8e5ca6","hanzi":"两","pinyin":"liǎng","meaning":"hai (dùng trước lượng từ)","example":"两天 / 两斤 (Hai ngày / Hai cân)","group":"Bài 1 & 2 (Slide PPTX)"},{"id":15,"audioId":"w_81ec89a2a8","hanzi":"百","pinyin":"bǎi","meaning":"trăm","example":"五百美元 (500 đô la Mỹ)","group":"Bài 1 & 2 (Slide PPTX)"},{"id":16,"audioId":"w_c821e52231","hanzi":"千","pinyin":"qiān","meaning":"nghìn","example":"两千元 (2000 đồng/tệ)","group":"Bài 1 & 2 (Slide PPTX)"},{"id":17,"audioId":"w_ab18e30c0d","hanzi":"大","pinyin":"dà","meaning":"to, lớn","example":"这件太大了。 (Chiếc này to quá.)","group":"Bài 1 & 2 (Slide PPTX)"},{"id":18,"audioId":"w_9eba1ab697","hanzi":"不","pinyin":"bù","meaning":"không (phủ định)","example":"不太难 (Không khó lắm)","group":"Bài 1 & 2 (Slide PPTX)"},{"id":19,"audioId":"w_c941757431","hanzi":"口","pinyin":"kǒu","meaning":"miệng; nhân khẩu (lượng từ)","example":"你家有几口人？ (Nhà bạn có mấy người?)","group":"Bài 1 & 2 (Slide PPTX)"},{"id":20,"audioId":"w_9b9a35c22a","hanzi":"白","pinyin":"bái","meaning":"trắng, màu trắng","example":"白马 (Ngựa trắng)","group":"Bài 1 & 2 (Slide PPTX)"},{"id":21,"audioId":"w_87c835a6b1","hanzi":"女","pinyin":"nǚ","meaning":"nữ, giới tính nữ","example":"女儿 (Con gái)","group":"Bài 1 & 2 (Slide PPTX)"},{"id":22,"audioId":"w_4e2572e0c7","hanzi":"马","pinyin":"mǎ","meaning":"con ngựa","example":"大马 (Ngựa lớn)","group":"Bài 1 & 2 (Slide PPTX)"},{"id":23,"audioId":"w_1c0a089e7a","hanzi":"忙","pinyin":"máng","meaning":"bận, bận rộn","example":"你工作忙吗？ (Công việc của bạn có bận không?)","group":"Bài 1 & 2 (Slide PPTX)"},{"id":24,"audioId":"w_2988084a74","hanzi":"吗","pinyin":"ma","meaning":"không? (trợ từ nghi vấn cuối câu)","example":"你忙吗？ (Bạn có bận không?)","group":"Bài 1 & 2 (Slide PPTX)"},{"id":25,"audioId":"w_5e360de1b1","hanzi":"很","pinyin":"hěn","meaning":"rất","example":"我很好。 (Tôi rất khỏe.)","group":"Bài 1 & 2 (Slide PPTX)"},{"id":26,"audioId":"w_25cf96268e","hanzi":"汉语","pinyin":"Hànyǔ","meaning":"tiếng Hán, tiếng Trung","example":"汉语不太难。 (Tiếng Trung không khó lắm.)","group":"Bài 1 & 2 (Slide PPTX)"},{"id":27,"audioId":"w_9455dd200b","hanzi":"难","pinyin":"nán","meaning":"khó","example":"汉语难吗？ (Tiếng Trung có khó không?)","group":"Bài 1 & 2 (Slide PPTX)"},{"id":28,"audioId":"w_2b2daab200","hanzi":"太","pinyin":"tài","meaning":"quá, lắm","example":"太好了！ (Tuyệt quá!)","group":"Bài 1 & 2 (Slide PPTX)"},{"id":29,"audioId":"w_0d00c80f61","hanzi":"爸爸","pinyin":"bàba","meaning":"bố, ba","example":"我爸爸是老师。 (Bố tôi là giáo viên.)","group":"Bài 1 & 2 (Slide PPTX)"},{"id":30,"audioId":"w_e6c7ee6003","hanzi":"妈妈","pinyin":"māma","meaning":"mẹ, má","example":"妈妈好吗？ (Mẹ có khỏe không?)","group":"Bài 1 & 2 (Slide PPTX)"},{"id":31,"audioId":"w_5fe86c60de","hanzi":"他","pinyin":"tā","meaning":"anh ấy, ông ấy","example":"他是谁？ (Anh ấy là ai?)","group":"Bài 1 & 2 (Slide PPTX)"},{"id":32,"audioId":"w_92f3ca76d5","hanzi":"她","pinyin":"tā","meaning":"cô ấy, bà ấy","example":"她是我同学。 (Cô ấy là bạn học của tôi.)","group":"Bài 1 & 2 (Slide PPTX)"},{"id":33,"audioId":"w_3c1400fbc2","hanzi":"它","pinyin":"tā","meaning":"nó (đồ vật, con vật)","example":"它很可爱。 (Nó rất đáng yêu.)","group":"Bài 1 & 2 (Slide PPTX)"},{"id":34,"audioId":"w_36a4908a55","hanzi":"男","pinyin":"nán","meaning":"nam, giới tính nam","example":"男生 (Nam sinh)","group":"Bài 1 & 2 (Slide PPTX)"},{"id":35,"audioId":"w_39af35e7b7","hanzi":"哥哥","pinyin":"gēge","meaning":"anh trai","example":"这是我哥哥。 (Đây là anh trai tôi.)","group":"Bài 1 & 2 (Slide PPTX)"},{"id":36,"audioId":"w_427034659a","hanzi":"弟弟","pinyin":"dìdi","meaning":"em trai","example":"我有一个弟弟。 (Tôi có một em trai.)","group":"Bài 1 & 2 (Slide PPTX)"},{"id":37,"audioId":"w_1c097b12de","hanzi":"妹妹","pinyin":"mèimei","meaning":"em gái","example":"她是我妹妹。 (Cô ấy là em gái tôi.)","group":"Bài 1 & 2 (Slide PPTX)"},{"id":38,"audioId":"w_db53804b7d","hanzi":"办公","pinyin":"bàngōng","meaning":"làm việc (văn phòng)","example":"我在办公室办公。 (Tôi làm việc ở văn phòng.)","group":"Bài 1 & 2 (Slide PPTX)"},{"id":39,"audioId":"w_8be34d50fd","hanzi":"买","pinyin":"mǎi","meaning":"mua","example":"你买苹果。 (Bạn mua táo.)","group":"Bài 1 & 2 (Slide PPTX)"},{"id":40,"audioId":"w_821d5fce78","hanzi":"卖","pinyin":"mài","meaning":"bán","example":"你卖苹果。 (Bạn bán táo.)","group":"Bài 1 & 2 (Slide PPTX)"},{"id":41,"audioId":"w_e6803e21b9","hanzi":"苹果","pinyin":"píngguǒ","meaning":"quả táo","example":"多少钱一斤苹果？ (Táo bao nhiêu tiền một cân?)","group":"Bài 1 & 2 (Slide PPTX)"},{"id":42,"audioId":"w_6f16ba5020","hanzi":"害怕","pinyin":"hàipà","meaning":"sợ hãi, lo sợ","example":"我有一点害怕。 (Tôi hơi sợ một chút.)","group":"Shadowing & Ghi chú"},{"id":43,"audioId":"w_dad2ab0807","hanzi":"认识","pinyin":"rènshi","meaning":"quen biết, nhận ra","example":"认识你很高兴！ (Rất vui được làm quen với bạn!)","group":"Shadowing & Ghi chú"},{"id":44,"audioId":"w_2f4e277fd6","hanzi":"吃惊","pinyin":"chījīng","meaning":"kinh ngạc, ngạc nhiên","example":"听到这个消息，大家都很吃惊。 (Nghe tin này, mọi người đều rất kinh ngạc.)","group":"Shadowing & Ghi chú"},{"id":45,"audioId":"w_c08a41c4be","hanzi":"回答","pinyin":"huídá","meaning":"trả lời, đáp lại","example":"老人没有马上回答。 (Ông lão không trả lời ngay.)","group":"Shadowing & Ghi chú"},{"id":46,"audioId":"w_24c7b1d70e","hanzi":"相信","pinyin":"xiāngxìn","meaning":"tin tưởng, tin rằng","example":"我相信你一定能做好。 (Tôi tin bạn nhất định sẽ làm tốt.)","group":"Shadowing & Ghi chú"},{"id":47,"audioId":"w_0a5ada90ba","hanzi":"离开","pinyin":"líkāi","meaning":"rời khỏi, rời đi","example":"请不要离开这里。 (Xin đừng rời khỏi đây.)","group":"Shadowing & Ghi chú"},{"id":48,"audioId":"w_ff692f04ac","hanzi":"消息","pinyin":"xiāoxi","meaning":"tin tức, tin nhắn","example":"这不是电话，是一个消息。 (Đây không phải cuộc gọi, mà là một tin nhắn.)","group":"Shadowing & Ghi chú"},{"id":49,"audioId":"w_f5abec1211","hanzi":"马上","pinyin":"mǎshàng","meaning":"lập tức, ngay lập tức","example":"请等一下，我马上就来。 (Xin đợi một chút, tôi đến ngay đây.)","group":"Shadowing & Ghi chú"},{"id":50,"audioId":"w_29c0a66c1a","hanzi":"担心","pinyin":"dānxīn","meaning":"lo lắng","example":"别担心，一切都会好起来的。 (Đừng lo lắng, mọi chuyện rồi sẽ ổn thôi.)","group":"Shadowing & Ghi chú"},{"id":51,"audioId":"w_4f51c62692","hanzi":"突然","pinyin":"tūrán","meaning":"đột nhiên, bỗng nhiên","example":"突然，我看见地上有一部手机。 (Đột nhiên, tôi thấy trên đất có một chiếc điện thoại.)","group":"Shadowing & Ghi chú"},{"id":52,"audioId":"w_92edcdca3b","hanzi":"慢慢","pinyin":"mànmàn","meaning":"chậm rãi, từ từ","example":"别着急，慢慢说。 (Đừng vội, cứ từ từ nói.)","group":"Shadowing & Ghi chú"},{"id":53,"audioId":"w_6a0e041931","hanzi":"个人","pinyin":"gèrén","meaning":"cá nhân / một mình","example":"我个人认为这个计划不错。 (Cá nhân tôi cho rằng kế hoạch này không tệ.)","group":"Shadowing & Ghi chú"},{"id":54,"audioId":"w_0c105e7ca0","hanzi":"自己","pinyin":"zìjǐ","meaning":"tự mình, bản thân","example":"我自己回家。 (Tôi tự mình về nhà.)","group":"Shadowing & Ghi chú"},{"id":55,"audioId":"w_ab65e25b52","hanzi":"冷静","pinyin":"lěngjìng","meaning":"bình tĩnh, điềm tĩnh","example":"请你先冷静下来。 (Xin bạn hãy bình tĩnh lại trước đã.)","group":"Shadowing & Ghi chú"},{"id":56,"audioId":"w_f095cde3fe","hanzi":"明白","pinyin":"míngbai","meaning":"hiểu rõ, hiểu ra","example":"你明白我的意思吗？ (Bạn có hiểu ý tôi không?)","group":"Shadowing & Ghi chú"},{"id":57,"audioId":"w_4b756cba61","hanzi":"刚才","pinyin":"gāngcái","meaning":"vừa nãy, lúc nãy","example":"你刚才去哪儿了？ (Vừa nãy bạn đi đâu thế?)","group":"Shadowing & Ghi chú"},{"id":58,"audioId":"w_17678e8a5f","hanzi":"其实","pinyin":"qíshí","meaning":"thật ra, kỳ thực","example":"汉语其实不太难。 (Tiếng Trung thật ra không khó lắm.)","group":"Shadowing & Ghi chú"},{"id":59,"audioId":"w_47781b8a72","hanzi":"欢迎","pinyin":"huānyíng","meaning":"hoan nghênh, chào đón","example":"欢迎您来北京！ (Chào mừng ngài đến Bắc Kinh!)","group":"Shadowing & Ghi chú"},{"id":60,"audioId":"w_6dcd6442b0","hanzi":"舒服","pinyin":"shūfu","meaning":"thoải mái, dễ chịu","example":"今天我身体不太舒服。 (Hôm nay trong người tôi không được khỏe lắm.)","group":"Shadowing & Ghi chú"},{"id":61,"audioId":"w_143d13cd35","hanzi":"复习","pinyin":"fùxí","meaning":"ôn tập, ôn bài","example":"学过的生词要常常复习。 (Từ mới đã học phải thường xuyên ôn tập.)","group":"Shadowing & Ghi chú"},{"id":62,"audioId":"w_3d5c04c981","hanzi":"老人","pinyin":"lǎorén","meaning":"ông lão, người già","example":"老人看着我，没有说话。 (Ông lão nhìn tôi, không nói gì.)","group":"Shadowing & Ghi chú"},{"id":63,"audioId":"w_9f9d36327d","hanzi":"手机","pinyin":"shǒujī","meaning":"điện thoại di động","example":"我的手机响了。 (Điện thoại của tôi reo lên rồi.)","group":"Shadowing & Ghi chú"},{"id":64,"audioId":"w_97574f67f4","hanzi":"小女孩","pinyin":"xiǎo nǚhái","meaning":"bé gái","example":"你是不是在找一个小女孩？ (Có phải bạn đang tìm một bé gái không?)","group":"Shadowing & Ghi chú"},{"id":65,"audioId":"w_d17f43870d","hanzi":"纸","pinyin":"zhǐ","meaning":"giấy","example":"他拿出一张小纸。 (Ông ấy lấy ra một mảnh giấy nhỏ.)","group":"Shadowing & Ghi chú"},{"id":66,"audioId":"w_07ff206d79","hanzi":"口袋","pinyin":"kǒudài","meaning":"túi (áo, quần)","example":"他从口袋里拿出手机。 (Ông ấy lấy điện thoại từ trong túi ra.)","group":"Shadowing & Ghi chú"},{"id":67,"audioId":"w_689fad203a","hanzi":"名字","pinyin":"míngzi","meaning":"tên","example":"你叫什么名字？ (Bạn tên là gì?)","group":"Shadowing & Ghi chú"},{"id":68,"audioId":"w_5a93d3f72d","hanzi":"电话","pinyin":"diànhuà","meaning":"điện thoại","example":"请她给我回个电话。 (Nhờ cô ấy gọi lại cho tôi một cuộc.)","group":"Shadowing & Ghi chú"},{"id":69,"audioId":"w_fcf3bc749c","hanzi":"应该","pinyin":"yīnggāi","meaning":"nên, phải","example":"我不知道应该相信他吗。 (Tôi không biết có nên tin ông ấy không.)","group":"Shadowing & Ghi chú"},{"id":70,"audioId":"w_70662d201d","hanzi":"点头","pinyin":"diǎntóu","meaning":"gật đầu","example":"老人点点头。 (Ông lão gật gật đầu.)","group":"Shadowing & Ghi chú"},{"id":71,"audioId":"w_8ccbdc4348","hanzi":"响","pinyin":"xiǎng","meaning":"reo, vang lên","example":"手机一直响。 (Điện thoại cứ reo mãi.)","group":"Shadowing & Ghi chú"},{"id":72,"audioId":"w_d7098f5050","hanzi":"打开","pinyin":"dǎkāi","meaning":"mở ra","example":"我打开消息。 (Tôi mở tin nhắn ra.)","group":"Shadowing & Ghi chú"},{"id":73,"audioId":"w_79b197abe7","hanzi":"告诉","pinyin":"gàosu","meaning":"nói cho biết, báo cho","example":"不要告诉那个老人。 (Đừng nói cho ông lão kia biết.)","group":"Shadowing & Ghi chú"},{"id":74,"audioId":"w_4b3774c6a2","hanzi":"站","pinyin":"zhàn","meaning":"đứng; trạm, bến","example":"老人还站在那里。 (Ông lão vẫn đứng ở đó.)","group":"Shadowing & Ghi chú"},{"id":75,"audioId":"w_d169d98021","hanzi":"好像","pinyin":"hǎoxiàng","meaning":"hình như, dường như","example":"他好像已经知道了。 (Dường như ông ấy đã biết rồi.)","group":"Shadowing & Ghi chú"},{"id":76,"audioId":"w_d26c2b24f3","hanzi":"已经","pinyin":"yǐjīng","meaning":"đã, rồi","example":"他已经离开这里了。 (Anh ấy đã rời khỏi đây rồi.)","group":"Shadowing & Ghi chú"},{"id":77,"audioId":"w_b963ce7e99","hanzi":"看见","pinyin":"kànjiàn","meaning":"nhìn thấy","example":"我没有看见那个小女孩。 (Tôi không nhìn thấy bé gái đó.)","group":"Shadowing & Ghi chú"},{"id":78,"audioId":"w_5929968d16","hanzi":"放学","pinyin":"fàngxué","meaning":"tan học","example":"今天放学以后我回家。 (Hôm nay sau khi tan học tôi về nhà.)","group":"Shadowing & Ghi chú"},{"id":79,"audioId":"w_552990e8eb","hanzi":"以后","pinyin":"yǐhòu","meaning":"sau này, sau khi","example":"到了公园以后我等他。 (Sau khi đến công viên tôi đợi cô ấy.)","group":"Shadowing & Ghi chú"},{"id":80,"audioId":"w_265f273cf1","hanzi":"天气","pinyin":"tiānqì","meaning":"thời tiết","example":"今天天气很好。 (Hôm nay thời tiết rất đẹp.)","group":"Shadowing & Ghi chú"},{"id":81,"audioId":"w_597b054cb4","hanzi":"路边","pinyin":"lùbiān","meaning":"bên đường","example":"一边走，一边看路边的小花。 (Vừa đi vừa ngắm hoa nhỏ bên đường.)","group":"Shadowing & Ghi chú"},{"id":82,"audioId":"w_871e73b2d2","hanzi":"小花","pinyin":"xiǎo huā","meaning":"bông hoa nhỏ","example":"路边有很多小花。 (Bên đường có rất nhiều hoa nhỏ.)","group":"Shadowing & Ghi chú"},{"id":83,"audioId":"w_d1b33e27e4","hanzi":"停下来","pinyin":"tíng xiàlái","meaning":"dừng lại","example":"我停下来看看前面。 (Tôi dừng lại nhìn phía trước.)","group":"Shadowing & Ghi chú"},{"id":84,"audioId":"w_0c3ea1e092","hanzi":"前面","pinyin":"qiánmiàn","meaning":"phía trước","example":"看看前面，没有人。 (Nhìn phía trước, không có ai.)","group":"Shadowing & Ghi chú"},{"id":85,"audioId":"w_518ffd2761","hanzi":"后面","pinyin":"hòumiàn","meaning":"phía sau","example":"后面也没有人。 (Phía sau cũng không có ai.)","group":"Shadowing & Ghi chú"},{"id":86,"audioId":"w_3a17b7352e","hanzi":"分钟","pinyin":"fēnzhōng","meaning":"phút","example":"我等了五分钟。 (Tôi đã đợi 5 phút.)","group":"Shadowing & Ghi chú"},{"id":87,"audioId":"w_e4e614d831","hanzi":"拿起","pinyin":"ná qǐ","meaning":"nhặt lên, cầm lên","example":"我拿起手机。 (Tôi nhặt chiếc điện thoại lên.)","group":"Shadowing & Ghi chú"},{"id":88,"audioId":"w_f4361d2cfe","hanzi":"漂亮","pinyin":"piàoliang","meaning":"đẹp, xinh đẹp","example":"手机很新，也很漂亮。 (Điện thoại rất mới, cũng rất đẹp.)","group":"Shadowing & Ghi chú"},{"id":89,"audioId":"w_385531f170","hanzi":"吓了一跳","pinyin":"xià le yí tiào","meaning":"giật mình, hoảng hốt","example":"手机响了，我吓了一跳。 (Điện thoại reo, tôi giật cả mình.)","group":"Shadowing & Ghi chú"},{"id":90,"audioId":"w_fb5fc98bcc","hanzi":"声音","pinyin":"shēngyīn","meaning":"âm thanh, giọng nói","example":"电话那边没有大人的声音。 (Đầu dây bên kia không có giọng người lớn.)","group":"Shadowing & Ghi chú"},{"id":91,"audioId":"w_2f62d5c731","hanzi":"小声","pinyin":"xiǎoshēng","meaning":"nhỏ giọng, nói khẽ","example":"她小声地说：“你好。” (Cô bé khẽ nói: \"Xin chào.\")","group":"Shadowing & Ghi chú"},{"id":92,"audioId":"w_0d6cfd1fdf","hanzi":"当然","pinyin":"dāngrán","meaning":"đương nhiên, tất nhiên","example":"当然可以！ (Tất nhiên là được!)","group":"Shadowing & Ghi chú"},{"id":93,"audioId":"w_249bdde955","hanzi":"公园","pinyin":"gōngyuán","meaning":"công viên","example":"我在人民公园。 (Tôi đang ở công viên Nhân Dân.)","group":"Shadowing & Ghi chú"},{"id":94,"audioId":"w_fe837d9b90","hanzi":"人民","pinyin":"rénmín","meaning":"nhân dân","example":"人民公园 / 人民剧场 (Công viên Nhân Dân / Nhà hát Nhân Dân)","group":"Shadowing & Ghi chú"},{"id":95,"audioId":"w_4036b30c8f","hanzi":"安静","pinyin":"ānjìng","meaning":"yên tĩnh","example":"请大家安静下来。 (Xin mọi người giữ yên lặng.)","group":"Shadowing & Ghi chú"},{"id":96,"audioId":"w_75f3b7ce95","hanzi":"留下来","pinyin":"liú xiàlái","meaning":"ở lại","example":"天气不好，你今晚就留下来吧。 (Thời tiết xấu, tối nay bạn ở lại đi.)","group":"Shadowing & Ghi chú"},{"id":97,"audioId":"w_0debf521ea","hanzi":"计划","pinyin":"jìhuà","meaning":"kế hoạch","example":"这个计划不错。 (Kế hoạch này không tệ.)","group":"Shadowing & Ghi chú"},{"id":98,"audioId":"w_a6396f13c2","hanzi":"意见","pinyin":"yìjiàn","meaning":"ý kiến","example":"这只是我个人的意见。 (Đây chỉ là ý kiến cá nhân của tôi.)","group":"Shadowing & Ghi chú"},{"id":99,"audioId":"w_ffebb592ee","hanzi":"养","pinyin":"yǎng","meaning":"nuôi (thú cưng, con)","example":"我家养了一条狗。 (Nhà tôi nuôi một con chó.)","group":"Shadowing & Ghi chú"},{"id":100,"audioId":"w_5090e44ef9","hanzi":"狗","pinyin":"gǒu","meaning":"con chó","example":"这条狗很聪明。 (Con chó này rất thông minh.)","group":"Shadowing & Ghi chú"},{"id":101,"audioId":"w_c8ea8eb5d7","hanzi":"可爱","pinyin":"kě'ài","meaning":"đáng yêu, dễ thương","example":"我家的小狗很可爱。 (Chú chó nhỏ nhà tôi rất đáng yêu.)","group":"Shadowing & Ghi chú"},{"id":102,"audioId":"w_4f11098f34","hanzi":"儿子","pinyin":"érzi","meaning":"con trai","example":"我的儿子今年五岁。 (Con trai tôi năm nay 5 tuổi.)","group":"Shadowing & Ghi chú"},{"id":103,"audioId":"w_b62d330b5a","hanzi":"女儿","pinyin":"nǚ'ér","meaning":"con gái","example":"我的女儿很喜欢学汉语。 (Con gái tôi rất thích học tiếng Trung.)","group":"Shadowing & Ghi chú"},{"id":104,"audioId":"w_3d6c396cf4","hanzi":"喜欢","pinyin":"xǐhuan","meaning":"thích","example":"我喜欢喝茶。 (Tôi thích uống trà.)","group":"Shadowing & Ghi chú"},{"id":105,"audioId":"w_2854fa1c12","hanzi":"岁","pinyin":"suì","meaning":"tuổi","example":"你女儿今年几岁了？ (Con gái bạn năm nay mấy tuổi rồi?)","group":"Shadowing & Ghi chú"},{"id":106,"audioId":"w_d6967327d1","hanzi":"一边","pinyin":"yìbiān","meaning":"vừa... (vừa làm gì)","example":"一边走，一边看。 (Vừa đi vừa ngắm.)","group":"Shadowing & Ghi chú"},{"id":107,"audioId":"w_515905219e","hanzi":"一直","pinyin":"yìzhí","meaning":"luôn, suốt, thẳng","example":"老人一直看着我。 (Ông lão cứ nhìn tôi mãi.)","group":"Shadowing & Ghi chú"},{"id":108,"audioId":"w_11ccee3ac8","hanzi":"等","pinyin":"děng","meaning":"đợi, chờ","example":"我在门口等你。 (Tôi đợi bạn ở cổng.)","group":"Shadowing & Ghi chú"},{"id":109,"audioId":"w_9415a8266b","hanzi":"最后","pinyin":"zuìhòu","meaning":"cuối cùng","example":"最后，我还是接了电话。 (Cuối cùng, tôi vẫn nghe máy.)","group":"Shadowing & Ghi chú"},{"id":110,"audioId":"w_3a5e15a303","hanzi":"过了一会儿","pinyin":"guò le yíhuìr","meaning":"một lúc sau","example":"过了一会儿他说了一句话。 (Một lúc sau ông ấy nói một câu.)","group":"Shadowing & Ghi chú"},{"id":111,"audioId":"w_b453832d2e","hanzi":"越来越","pinyin":"yuè lái yuè","meaning":"càng ngày càng","example":"我越来越喜欢学汉语。 (Tôi càng ngày càng thích học tiếng Trung.)","group":"Shadowing & Ghi chú"},{"id":112,"audioId":"w_1681525453","hanzi":"我","pinyin":"wǒ","meaning":"tôi, mình","example":"我很好。 (Tôi rất khỏe.)","group":"301 Tập 1 – Bài 1–5"},{"id":113,"audioId":"w_61faca1cae","hanzi":"也","pinyin":"yě","meaning":"cũng","example":"我也很好。 (Tôi cũng rất khỏe.)","group":"301 Tập 1 – Bài 1–5"},{"id":114,"audioId":"w_247edb94d4","hanzi":"你们","pinyin":"nǐmen","meaning":"các bạn","example":"你们好吗？ (Các bạn có khỏe không?)","group":"301 Tập 1 – Bài 1–5"},{"id":115,"audioId":"w_ab4a85fc2e","hanzi":"我们","pinyin":"wǒmen","meaning":"chúng tôi, chúng ta","example":"我们都是学生。 (Chúng tôi đều là sinh viên.)","group":"301 Tập 1 – Bài 1–5"},{"id":116,"audioId":"w_d0a33aaeb3","hanzi":"他们","pinyin":"tāmen","meaning":"bọn họ, các anh ấy","example":"他们都很好。 (Họ đều rất khỏe.)","group":"301 Tập 1 – Bài 1–5"},{"id":117,"audioId":"w_de44f194cf","hanzi":"都","pinyin":"dōu","meaning":"đều, tất cả","example":"我们都很好。 (Chúng tôi đều rất khỏe.)","group":"301 Tập 1 – Bài 1–5"},{"id":118,"audioId":"w_d6cb15b9a6","hanzi":"早","pinyin":"zǎo","meaning":"sớm; chào buổi sáng","example":"老师，你早！ (Em chào thầy buổi sáng!)","group":"301 Tập 1 – Bài 1–5"},{"id":119,"audioId":"w_7be627ccbd","hanzi":"身体","pinyin":"shēntǐ","meaning":"sức khỏe, cơ thể","example":"你身体好吗？ (Sức khỏe bạn tốt không?)","group":"301 Tập 1 – Bài 1–5"},{"id":120,"audioId":"w_a34490b593","hanzi":"谢谢","pinyin":"xièxie","meaning":"cảm ơn","example":"谢谢老师！ (Cảm ơn thầy ạ!)","group":"301 Tập 1 – Bài 1–5"},{"id":121,"audioId":"w_8e5c0a1e46","hanzi":"再见","pinyin":"zàijiàn","meaning":"tạm biệt","example":"老师再见！ (Tạm biệt thầy!)","group":"301 Tập 1 – Bài 1–5"},{"id":122,"audioId":"w_295af37e05","hanzi":"老师","pinyin":"lǎoshī","meaning":"thầy, cô giáo","example":"他是我的汉语老师。 (Thầy ấy là giáo viên tiếng Trung của tôi.)","group":"301 Tập 1 – Bài 1–5"},{"id":123,"audioId":"w_35d9969dfa","hanzi":"学生","pinyin":"xuéshēng","meaning":"học sinh, sinh viên","example":"她是美国学生。 (Cô ấy là sinh viên Mỹ.)","group":"301 Tập 1 – Bài 1–5"},{"id":124,"audioId":"w_6e2d1fbf23","hanzi":"您","pinyin":"nín","meaning":"ngài, ông, bà (kính trọng)","example":"您身体好吗？ (Ngài có khỏe không ạ?)","group":"301 Tập 1 – Bài 1–5"},{"id":125,"audioId":"w_9a018b21ab","hanzi":"工作","pinyin":"gōngzuò","meaning":"công việc; làm việc","example":"他在银行工作。 (Anh ấy làm việc ở ngân hàng.)","group":"301 Tập 1 – Bài 1–5"},{"id":126,"audioId":"w_65ac5a7b15","hanzi":"呢","pinyin":"ne","meaning":"thế, thì sao? (trợ từ)","example":"我很忙，你呢？ (Tôi rất bận, còn bạn?)","group":"301 Tập 1 – Bài 1–5"},{"id":127,"audioId":"w_56d4cc950b","hanzi":"贵姓","pinyin":"guìxìng","meaning":"quý danh, họ là gì (kính ngữ)","example":"老师，您贵姓？ (Thưa thầy, thầy họ gì ạ?)","group":"301 Tập 1 – Bài 1–5"},{"id":128,"audioId":"w_1b992ad754","hanzi":"姓","pinyin":"xìng","meaning":"họ (tên họ)","example":"我姓王。 (Tôi họ Vương.)","group":"301 Tập 1 – Bài 1–5"},{"id":129,"audioId":"w_27ead3ff93","hanzi":"叫","pinyin":"jiào","meaning":"gọi, tên là","example":"我叫玛丽。 (Tôi tên là Mary.)","group":"301 Tập 1 – Bài 1–5"},{"id":130,"audioId":"w_736ccbe560","hanzi":"什么","pinyin":"shénme","meaning":"cái gì","example":"你叫什么名字？ (Bạn tên là gì?)","group":"301 Tập 1 – Bài 1–5"},{"id":131,"audioId":"w_0a60ac8f02","hanzi":"是","pinyin":"shì","meaning":"là","example":"我是中国人。 (Tôi là người Trung Quốc.)","group":"301 Tập 1 – Bài 1–5"},{"id":132,"audioId":"w_60b633faa9","hanzi":"高兴","pinyin":"gāoxìng","meaning":"vui mừng","example":"认识你很高兴。 (Rất vui được quen biết bạn.)","group":"301 Tập 1 – Bài 1–5"},{"id":133,"audioId":"w_cfbafdf1d6","hanzi":"谁","pinyin":"shéi","meaning":"ai","example":"他是谁？ (Anh ấy là ai?)","group":"301 Tập 1 – Bài 1–5"},{"id":134,"audioId":"w_61a3ec6656","hanzi":"介绍","pinyin":"jièshào","meaning":"giới thiệu","example":"我介绍一下，这是我哥哥。 (Tôi xin giới thiệu, đây là anh trai tôi.)","group":"301 Tập 1 – Bài 1–5"},{"id":135,"audioId":"w_88bdd35604","hanzi":"一下","pinyin":"yíxià","meaning":"một chút","example":"请您写一下儿。 (Xin ngài viết ra một chút.)","group":"301 Tập 1 – Bài 1–5"},{"id":136,"audioId":"w_8e9b7a3a19","hanzi":"这","pinyin":"zhè","meaning":"đây, này","example":"这是我的书。 (Đây là sách của tôi.)","group":"301 Tập 1 – Bài 1–5"},{"id":137,"audioId":"w_995c3ec9d7","hanzi":"那","pinyin":"nà","meaning":"kia, đó","example":"那是我姐姐。 (Kia là chị gái tôi.)","group":"301 Tập 1 – Bài 1–5"},{"id":138,"audioId":"w_dfb9366c91","hanzi":"去","pinyin":"qù","meaning":"đi","example":"你去哪儿？ (Bạn đi đâu đấy?)","group":"301 Tập 1 – Bài 1–5"},{"id":139,"audioId":"w_92c5455654","hanzi":"哪儿","pinyin":"nǎr","meaning":"đâu, ở đâu","example":"邮局在哪儿？ (Bưu điện ở đâu?)","group":"301 Tập 1 – Bài 1–5"},{"id":140,"audioId":"w_572a6791c3","hanzi":"大学","pinyin":"dàxué","meaning":"trường đại học","example":"我去北京大学。 (Tôi đến Đại học Bắc Kinh.)","group":"301 Tập 1 – Bài 1–5"},{"id":141,"audioId":"w_f303c10a9f","hanzi":"商店","pinyin":"shāngdiàn","meaning":"cửa hàng","example":"我们去商店买东西。 (Chúng tôi đi cửa hàng mua đồ.)","group":"301 Tập 1 – Bài 1–5"},{"id":142,"audioId":"w_241d47a3ee","hanzi":"在","pinyin":"zài","meaning":"ở, tại; đang","example":"张老师在家吗？ (Thầy Trương có ở nhà không?)","group":"301 Tập 1 – Bài 1–5"},{"id":143,"audioId":"w_a6cdd2a00b","hanzi":"家","pinyin":"jiā","meaning":"nhà, gia đình","example":"我在家学习。 (Tôi học ở nhà.)","group":"301 Tập 1 – Bài 1–5"},{"id":144,"audioId":"w_d1a34a5779","hanzi":"请","pinyin":"qǐng","meaning":"mời; xin vui lòng","example":"请进！ (Mời vào!)","group":"301 Tập 1 – Bài 1–5"},{"id":145,"audioId":"w_0b1b3058fb","hanzi":"进","pinyin":"jìn","meaning":"vào","example":"请进屋里坐。 (Mời vào trong nhà ngồi.)","group":"301 Tập 1 – Bài 1–5"},{"id":146,"audioId":"w_800dfdd902","hanzi":"今天","pinyin":"jīntiān","meaning":"hôm nay","example":"今天几号？ (Hôm nay ngày mấy?)","group":"301 Tập 1 – Bài 6–10"},{"id":147,"audioId":"w_2f8d6f1584","hanzi":"昨天","pinyin":"zuótiān","meaning":"hôm qua","example":"昨天星期四。 (Hôm qua là thứ Năm.)","group":"301 Tập 1 – Bài 6–10"},{"id":148,"audioId":"w_8bcbd77d1f","hanzi":"明天","pinyin":"míngtiān","meaning":"ngày mai","example":"明天见！ (Hẹn gặp lại ngày mai!)","group":"301 Tập 1 – Bài 6–10"},{"id":149,"audioId":"w_28fef849a6","hanzi":"几","pinyin":"jǐ","meaning":"mấy, bao nhiêu (dưới 10)","example":"今天几号？ (Hôm nay ngày mấy?)","group":"301 Tập 1 – Bài 6–10"},{"id":150,"audioId":"w_f7b3204e43","hanzi":"号","pinyin":"hào","meaning":"ngày (dùng trong văn nói); số","example":"五月九号 (Ngày 9 tháng 5)","group":"301 Tập 1 – Bài 6–10"},{"id":151,"audioId":"w_e42b99d599","hanzi":"月","pinyin":"yuè","meaning":"tháng; mặt trăng","example":"三月十七号 (Ngày 17 tháng 3)","group":"301 Tập 1 – Bài 6–10"},{"id":152,"audioId":"w_9e71cf606e","hanzi":"星期","pinyin":"xīngqī","meaning":"tuần, thứ","example":"今天星期六。 (Hôm nay thứ Bảy.)","group":"301 Tập 1 – Bài 6–10"},{"id":153,"audioId":"w_2ff46ae697","hanzi":"星期天","pinyin":"xīngqītiān","meaning":"Chủ nhật","example":"星期天我去公园。 (Chủ nhật tôi đi công viên.)","group":"301 Tập 1 – Bài 6–10"},{"id":154,"audioId":"w_8483ed132b","hanzi":"生日","pinyin":"shēngrì","meaning":"sinh nhật","example":"你的生日是几月几号？ (Sinh nhật bạn là ngày mấy tháng mấy?)","group":"301 Tập 1 – Bài 6–10"},{"id":155,"audioId":"w_a80cc5027a","hanzi":"晚上","pinyin":"wǎnshang","meaning":"buổi tối","example":"晚上你做什么？ (Buổi tối bạn làm gì?)","group":"301 Tập 1 – Bài 6–10"},{"id":156,"audioId":"w_f8fbeae194","hanzi":"上午","pinyin":"shàngwǔ","meaning":"buổi sáng (trước trưa)","example":"我们上午去，好吗？ (Sáng mai bọn mình đi nhé?)","group":"301 Tập 1 – Bài 6–10"},{"id":157,"audioId":"w_4d7dc6c5f8","hanzi":"写","pinyin":"xiě","meaning":"viết","example":"我写信。 (Tôi viết thư.)","group":"301 Tập 1 – Bài 6–10"},{"id":158,"audioId":"w_bf94136271","hanzi":"信","pinyin":"xìn","meaning":"thư từ","example":"我给朋友写信。 (Tôi viết thư cho bạn.)","group":"301 Tập 1 – Bài 6–10"},{"id":159,"audioId":"w_9302446f9b","hanzi":"看","pinyin":"kàn","meaning":"xem, nhìn, đọc","example":"我看电视。 (Tôi xem tivi.)","group":"301 Tập 1 – Bài 6–10"},{"id":160,"audioId":"w_3a2f904027","hanzi":"电视","pinyin":"diànshì","meaning":"tivi, truyền hình","example":"晚上我看电视。 (Buổi tối tôi xem tivi.)","group":"301 Tập 1 – Bài 6–10"},{"id":161,"audioId":"w_465afe3c11","hanzi":"人","pinyin":"rén","meaning":"người","example":"星期天人太多。 (Chủ nhật người đông quá.)","group":"301 Tập 1 – Bài 6–10"},{"id":162,"audioId":"w_ab20cc42f3","hanzi":"和","pinyin":"hé","meaning":"và","example":"爸爸、妈妈和我。 (Bố, mẹ và tôi.)","group":"301 Tập 1 – Bài 6–10"},{"id":163,"audioId":"w_7105106a36","hanzi":"做","pinyin":"zuò","meaning":"làm","example":"你爸爸做什么工作？ (Bố bạn làm nghề gì?)","group":"301 Tập 1 – Bài 6–10"},{"id":164,"audioId":"w_4ef520d6cd","hanzi":"学习","pinyin":"xuéxí","meaning":"học, học tập","example":"他学习英语。 (Em ấy học tiếng Anh.)","group":"301 Tập 1 – Bài 6–10"},{"id":165,"audioId":"w_4145d4c179","hanzi":"英语","pinyin":"Yīngyǔ","meaning":"tiếng Anh","example":"我会说一点儿英语。 (Tôi biết nói một chút tiếng Anh.)","group":"301 Tập 1 – Bài 6–10"},{"id":166,"audioId":"w_033e1fb01c","hanzi":"姐姐","pinyin":"jiějie","meaning":"chị gái","example":"我姐姐在银行工作。 (Chị gái tôi làm việc ở ngân hàng.)","group":"301 Tập 1 – Bài 6–10"},{"id":167,"audioId":"w_760ba4ddfc","hanzi":"职员","pinyin":"zhíyuán","meaning":"nhân viên, viên chức","example":"她是公司职员。 (Cô ấy là nhân viên công ty.)","group":"301 Tập 1 – Bài 6–10"},{"id":168,"audioId":"w_f14b4f28c4","hanzi":"银行","pinyin":"yínháng","meaning":"ngân hàng","example":"银行在邮局旁边。 (Ngân hàng ở cạnh bưu điện.)","group":"301 Tập 1 – Bài 6–10"},{"id":169,"audioId":"w_2d4a8d8e01","hanzi":"大夫","pinyin":"dàifu","meaning":"bác sĩ","example":"他哥哥是大夫。 (Anh trai anh ấy là bác sĩ.)","group":"301 Tập 1 – Bài 6–10"},{"id":170,"audioId":"w_e236dc7645","hanzi":"结婚","pinyin":"jiéhūn","meaning":"kết hôn, cưới","example":"他结婚了吗？ (Anh ấy kết hôn chưa?)","group":"301 Tập 1 – Bài 6–10"},{"id":171,"audioId":"w_d536ecf38d","hanzi":"爱人","pinyin":"àiren","meaning":"vợ hoặc chồng","example":"他爱人也是大夫。 (Vợ anh ấy cũng là bác sĩ.)","group":"301 Tập 1 – Bài 6–10"},{"id":172,"audioId":"w_03e25ab08d","hanzi":"孩子","pinyin":"háizi","meaning":"con cái, trẻ em","example":"他们有孩子吗？ (Họ có con chưa?)","group":"301 Tập 1 – Bài 6–10"},{"id":173,"audioId":"w_b4ebe3f519","hanzi":"没有","pinyin":"méiyǒu","meaning":"không có, chưa","example":"我没有手机。 (Tôi không có điện thoại.)","group":"301 Tập 1 – Bài 6–10"},{"id":174,"audioId":"w_505ccfb0e8","hanzi":"现在","pinyin":"xiànzài","meaning":"bây giờ, hiện tại","example":"现在几点？ (Bây giờ là mấy giờ?)","group":"301 Tập 1 – Bài 6–10"},{"id":175,"audioId":"w_be604f8b7e","hanzi":"点","pinyin":"diǎn","meaning":"giờ (đồng hồ)","example":"现在七点。 (Bây giờ là 7 giờ.)","group":"301 Tập 1 – Bài 6–10"},{"id":176,"audioId":"w_daf783c8cd","hanzi":"分","pinyin":"fēn","meaning":"phút; xu (tiền)","example":"七点二十五分 (7 giờ 25 phút)","group":"301 Tập 1 – Bài 6–10"},{"id":177,"audioId":"w_18b930ed1f","hanzi":"上课","pinyin":"shàngkè","meaning":"vào lớp, lên lớp","example":"你几点上课？ (Mấy giờ bạn vào học?)","group":"301 Tập 1 – Bài 6–10"},{"id":178,"audioId":"w_c0d56a93de","hanzi":"什么时候","pinyin":"shénme shíhou","meaning":"khi nào, bao giờ","example":"你什么时候去？ (Khi nào bạn đi?)","group":"301 Tập 1 – Bài 6–10"},{"id":179,"audioId":"w_28c2fc3de8","hanzi":"教室","pinyin":"jiàoshì","meaning":"phòng học, lớp học","example":"我去教室上课。 (Tôi đến phòng học lên lớp.)","group":"301 Tập 1 – Bài 6–10"},{"id":180,"audioId":"w_796a506e5f","hanzi":"差","pinyin":"chà","meaning":"kém, thiếu","example":"差一刻八点 (8 giờ kém 15)","group":"301 Tập 1 – Bài 6–10"},{"id":181,"audioId":"w_d49dc1c4a5","hanzi":"刻","pinyin":"kè","meaning":"khắc (15 phút)","example":"七点一刻 (7 giờ 15)","group":"301 Tập 1 – Bài 6–10"},{"id":182,"audioId":"w_0068330a10","hanzi":"吃饭","pinyin":"chīfàn","meaning":"ăn cơm","example":"我去吃饭。 (Tôi đi ăn cơm.)","group":"301 Tập 1 – Bài 6–10"},{"id":183,"audioId":"w_592c5cd944","hanzi":"长城","pinyin":"Chángchéng","meaning":"Vạn Lý Trường Thành","example":"明天去长城，好吗？ (Mai đi Trường Thành nhé?)","group":"301 Tập 1 – Bài 6–10"},{"id":184,"audioId":"w_c8c0ba481d","hanzi":"早上","pinyin":"zǎoshang","meaning":"sáng sớm","example":"早上七点起床。 (7 giờ sáng thức dậy.)","group":"301 Tập 1 – Bài 6–10"},{"id":185,"audioId":"w_2475dea6e8","hanzi":"半","pinyin":"bàn","meaning":"rưỡi, một nửa","example":"七点半 (7 giờ rưỡi)","group":"301 Tập 1 – Bài 6–10"},{"id":186,"audioId":"w_59b19552d6","hanzi":"起床","pinyin":"qǐchuáng","meaning":"thức dậy, ngủ dậy","example":"你几点起床？ (Mấy giờ bạn dậy?)","group":"301 Tập 1 – Bài 6–10"},{"id":187,"audioId":"w_84f3602f49","hanzi":"住","pinyin":"zhù","meaning":"sống, cư trú, ở","example":"你住在哪儿？ (Bạn sống ở đâu?)","group":"301 Tập 1 – Bài 6–10"},{"id":188,"audioId":"w_6939877f0e","hanzi":"留学生","pinyin":"liúxuéshēng","meaning":"lưu học sinh, du học sinh","example":"我是语言学院留学生。 (Tôi là du học sinh Học viện Ngôn ngữ.)","group":"301 Tập 1 – Bài 6–10"},{"id":189,"audioId":"w_ee38f508be","hanzi":"宿舍","pinyin":"sùshè","meaning":"ký túc xá","example":"他住在留学生宿舍。 (Anh ấy ở ký túc xá lưu học sinh.)","group":"301 Tập 1 – Bài 6–10"},{"id":190,"audioId":"w_302a1f4343","hanzi":"楼","pinyin":"lóu","meaning":"tòa nhà, tầng lầu","example":"八楼在哪儿？ (Tòa nhà số 8 ở đâu?)","group":"301 Tập 1 – Bài 6–10"},{"id":191,"audioId":"w_22266fe1dd","hanzi":"多少","pinyin":"duōshao","meaning":"bao nhiêu","example":"多少钱一斤？ (Bao nhiêu tiền một cân?)","group":"301 Tập 1 – Bài 6–10"},{"id":192,"audioId":"w_9bdfe95fda","hanzi":"房间","pinyin":"fángjiān","meaning":"phòng","example":"这个房间真不错。 (Căn phòng này thật tuyệt.)","group":"301 Tập 1 – Bài 6–10"},{"id":193,"audioId":"w_961b11cf0b","hanzi":"玩儿","pinyin":"wánr","meaning":"chơi, đi chơi","example":"欢迎你去玩儿。 (Chào mừng bạn đến chơi.)","group":"301 Tập 1 – Bài 6–10"},{"id":194,"audioId":"w_5dd93697ae","hanzi":"知道","pinyin":"zhīdào","meaning":"biết","example":"我不知道他在哪儿。 (Tôi không biết anh ấy ở đâu.)","group":"301 Tập 1 – Bài 6–10"},{"id":195,"audioId":"w_5ad8bea218","hanzi":"常","pinyin":"cháng","meaning":"thường, hay","example":"她常去我哥哥家。 (Cô ấy hay đến nhà anh trai tôi.)","group":"301 Tập 1 – Bài 6–10"},{"id":196,"audioId":"w_57fe12bfc3","hanzi":"问","pinyin":"wèn","meaning":"hỏi","example":"我去问她一下。 (Tôi đi hỏi cô ấy một chút.)","group":"301 Tập 1 – Bài 6–10"},{"id":197,"audioId":"w_d047a27f42","hanzi":"路","pinyin":"lù","meaning":"đường, tuyến đường","example":"你不认识路，我们一起去吧。 (Bạn không biết đường, mình cùng đi nhé.)","group":"301 Tập 1 – Bài 6–10"},{"id":198,"audioId":"w_3efffd5f35","hanzi":"一起","pinyin":"yìqǐ","meaning":"cùng nhau","example":"我们一起去吧！ (Chúng mình cùng đi nhé!)","group":"301 Tập 1 – Bài 6–10"},{"id":199,"audioId":"w_4da53d80ab","hanzi":"同志","pinyin":"tóngzhì","meaning":"đồng chí (cách gọi lịch sự)","example":"同志，请问邮局在哪儿？ (Anh/chị ơi, cho hỏi bưu điện ở đâu?)","group":"301 Tập 1 – Bài 6–10"},{"id":200,"audioId":"w_0a50d8e569","hanzi":"旁边","pinyin":"pángbiān","meaning":"bên cạnh","example":"就在银行旁边。 (Ngay ở bên cạnh ngân hàng.)","group":"301 Tập 1 – Bài 6–10"},{"id":201,"audioId":"w_786df56259","hanzi":"怎么","pinyin":"zěnme","meaning":"thế nào, sao lại","example":"怎么走？ (Đi như thế nào ạ?)","group":"301 Tập 1 – Bài 6–10"},{"id":202,"audioId":"w_0154e79e14","hanzi":"走","pinyin":"zǒu","meaning":"đi, đi bộ","example":"往前走。 (Đi thẳng về phía trước.)","group":"301 Tập 1 – Bài 6–10"},{"id":203,"audioId":"w_ed44bc3660","hanzi":"邮局","pinyin":"yóujú","meaning":"bưu điện","example":"请问，邮局在哪儿？ (Xin hỏi bưu điện ở đâu?)","group":"301 Tập 1 – Bài 6–10"},{"id":204,"audioId":"w_2d29e69229","hanzi":"前边","pinyin":"qiánbian","meaning":"phía trước","example":"在前边。 (Ở phía trước.)","group":"301 Tập 1 – Bài 6–10"},{"id":205,"audioId":"w_a3cc6922c7","hanzi":"往","pinyin":"wǎng","meaning":"về phía, hướng tới","example":"往前走。 (Đi về phía trước.)","group":"301 Tập 1 – Bài 6–10"},{"id":206,"audioId":"w_2afad8c04a","hanzi":"离","pinyin":"lí","meaning":"cách (khoảng cách)","example":"离这儿远不远？ (Cách đây có xa không?)","group":"301 Tập 1 – Bài 6–10"},{"id":207,"audioId":"w_6619176b57","hanzi":"远","pinyin":"yuǎn","meaning":"xa","example":"不太远。 (Không xa lắm.)","group":"301 Tập 1 – Bài 6–10"},{"id":208,"audioId":"w_d73d0c2b97","hanzi":"地方","pinyin":"dìfang","meaning":"nơi, chỗ, địa điểm","example":"百货大楼在什么地方？ (Tòa Bách Hóa ở chỗ nào?)","group":"301 Tập 1 – Bài 6–10"},{"id":209,"audioId":"w_0169bebf68","hanzi":"坐","pinyin":"zuò","meaning":"ngồi; đi (bằng phương tiện)","example":"在哪儿坐汽车？ (Đón xe buýt ở đâu?)","group":"301 Tập 1 – Bài 6–10"},{"id":210,"audioId":"w_b64c412083","hanzi":"汽车","pinyin":"qìchē","meaning":"ô tô, xe buýt","example":"汽车在外边。 (Xe ở bên ngoài.)","group":"301 Tập 1 – Bài 6–10"},{"id":211,"audioId":"w_9bd248cb55","hanzi":"售货员","pinyin":"shòuhuòyuán","meaning":"nhân viên bán hàng","example":"售货员很热情。 (Nhân viên bán hàng rất nhiệt tình.)","group":"301 Tập 1 – Bài 11–15"},{"id":212,"audioId":"w_5438c873f9","hanzi":"要","pinyin":"yào","meaning":"muốn, cần; phải","example":"您要买什么？ (Ngài muốn mua gì?)","group":"301 Tập 1 – Bài 11–15"},{"id":213,"audioId":"w_d23513f09b","hanzi":"钱","pinyin":"qián","meaning":"tiền","example":"多少钱？ (Bao nhiêu tiền?)","group":"301 Tập 1 – Bài 11–15"},{"id":214,"audioId":"w_3bcc941502","hanzi":"斤","pinyin":"jīn","meaning":"cân (Trung Quốc, bằng 0,5 kg)","example":"我买两斤苹果。 (Tôi mua hai cân táo.)","group":"301 Tập 1 – Bài 11–15"},{"id":215,"audioId":"w_7084eb1b15","hanzi":"块","pinyin":"kuài","meaning":"đồng (tiền tệ); miếng","example":"两块五毛 (2 đồng 5 hào)","group":"301 Tập 1 – Bài 11–15"},{"id":216,"audioId":"w_6f74ec994e","hanzi":"毛","pinyin":"máo","meaning":"hào (1/10 đồng)","example":"六毛钱 (6 hào)","group":"301 Tập 1 – Bài 11–15"},{"id":217,"audioId":"w_b13903cec9","hanzi":"种","pinyin":"zhǒng","meaning":"loại, kiểu","example":"那种便宜。 (Loại kia rẻ hơn.)","group":"301 Tập 1 – Bài 11–15"},{"id":218,"audioId":"w_555284b036","hanzi":"别的","pinyin":"biéde","meaning":"cái khác, người khác","example":"还要别的吗？ (Còn cần gì khác nữa không?)","group":"301 Tập 1 – Bài 11–15"},{"id":219,"audioId":"w_2694f9998b","hanzi":"桔子","pinyin":"júzi","meaning":"quả quýt","example":"我要买桔子。 (Tôi muốn mua quýt.)","group":"301 Tập 1 – Bài 11–15"},{"id":220,"audioId":"w_0a0f0a1307","hanzi":"贵","pinyin":"guì","meaning":"đắt; quý","example":"太贵了！ (Đắt quá!)","group":"301 Tập 1 – Bài 11–15"},{"id":221,"audioId":"w_86194baed3","hanzi":"便宜","pinyin":"piányi","meaning":"rẻ","example":"这种很便宜。 (Loại này rất rẻ.)","group":"301 Tập 1 – Bài 11–15"},{"id":222,"audioId":"w_0493ebcdd8","hanzi":"尝","pinyin":"cháng","meaning":"nếm, thử","example":"您尝尝这个菜。 (Ngài nếm thử món này xem.)","group":"301 Tập 1 – Bài 11–15"},{"id":223,"audioId":"w_74eaee9656","hanzi":"冷","pinyin":"lěng","meaning":"lạnh","example":"天冷了，多穿点衣服。 (Trời lạnh rồi, mặc thêm đồ đi.)","group":"301 Tập 1 – Bài 11–15"},{"id":224,"audioId":"w_291837bd5b","hanzi":"想","pinyin":"xiǎng","meaning":"muốn; nghĩ; nhớ","example":"我想买件毛衣。 (Tôi muốn mua một chiếc áo len.)","group":"301 Tập 1 – Bài 11–15"},{"id":225,"audioId":"w_f7edf5acc7","hanzi":"件","pinyin":"jiàn","meaning":"chiếc, cái (lượng từ quần áo, việc)","example":"这件毛衣很漂亮。 (Chiếc áo len này rất đẹp.)","group":"301 Tập 1 – Bài 11–15"},{"id":226,"audioId":"w_32d5f4e754","hanzi":"毛衣","pinyin":"máoyī","meaning":"áo len","example":"我看看那件毛衣。 (Cho tôi xem chiếc áo len kia.)","group":"301 Tập 1 – Bài 11–15"},{"id":227,"audioId":"w_a026c722b2","hanzi":"东西","pinyin":"dōngxi","meaning":"đồ đạc, đồ vật","example":"我也要买东西。 (Tôi cũng muốn mua đồ.)","group":"301 Tập 1 – Bài 11–15"},{"id":228,"audioId":"w_dcc8446e1c","hanzi":"怎么样","pinyin":"zěnmeyàng","meaning":"thế nào","example":"星期天去，怎么样？ (Chủ nhật đi thì thế nào?)","group":"301 Tập 1 – Bài 11–15"},{"id":229,"audioId":"w_7b1568e679","hanzi":"多","pinyin":"duō","meaning":"nhiều","example":"星期天人太多。 (Chủ nhật người đông quá.)","group":"301 Tập 1 – Bài 11–15"},{"id":230,"audioId":"w_e2eb289cc3","hanzi":"下午","pinyin":"xiàwǔ","meaning":"buổi chiều","example":"明天下午去吧。 (Chiều mai đi nhé.)","group":"301 Tập 1 – Bài 11–15"},{"id":231,"audioId":"w_eaa9c5c2f1","hanzi":"可以","pinyin":"kěyǐ","meaning":"có thể, được","example":"我可以试试吗？ (Tôi có thể thử không?)","group":"301 Tập 1 – Bài 11–15"},{"id":232,"audioId":"w_13a604ca8b","hanzi":"试","pinyin":"shì","meaning":"thử","example":"您试一下儿吧。 (Anh thử một chút đi.)","group":"301 Tập 1 – Bài 11–15"},{"id":233,"audioId":"w_b58b94d807","hanzi":"短","pinyin":"duǎn","meaning":"ngắn","example":"这件太短了。 (Chiếc này ngắn quá.)","group":"301 Tập 1 – Bài 11–15"},{"id":234,"audioId":"w_bec7a0c664","hanzi":"再","pinyin":"zài","meaning":"lại, nữa","example":"我再试一下儿。 (Tôi thử lại một chút.)","group":"301 Tập 1 – Bài 11–15"},{"id":235,"audioId":"w_391b8fa9c7","hanzi":"小","pinyin":"xiǎo","meaning":"nhỏ, bé","example":"这件不大也不小。 (Chiếc này không to cũng không nhỏ.)","group":"301 Tập 1 – Bài 11–15"},{"id":236,"audioId":"w_9302efe985","hanzi":"极了","pinyin":"jí le","meaning":"cực kỳ, vô cùng","example":"好极了！ (Tuyệt vời!)","group":"301 Tập 1 – Bài 11–15"},{"id":237,"audioId":"w_103512c679","hanzi":"换","pinyin":"huàn","meaning":"đổi, thay","example":"我要去换钱。 (Tôi phải đi đổi tiền.)","group":"301 Tập 1 – Bài 11–15"},{"id":238,"audioId":"w_7fce128995","hanzi":"车","pinyin":"chē","meaning":"xe","example":"要换车吗？ (Có phải đổi xe không?)","group":"301 Tập 1 – Bài 11–15"},{"id":239,"audioId":"w_e46f3b4fe1","hanzi":"票","pinyin":"piào","meaning":"vé","example":"买两张票。 (Mua hai tấm vé.)","group":"301 Tập 1 – Bài 11–15"},{"id":240,"audioId":"w_6499fc7409","hanzi":"张","pinyin":"zhāng","meaning":"tấm, tờ, chiếc (lượng từ)","example":"多少钱一张？ (Bao nhiêu tiền một tấm?)","group":"301 Tập 1 – Bài 11–15"},{"id":241,"audioId":"w_37186b95f5","hanzi":"给","pinyin":"gěi","meaning":"cho, đưa cho","example":"给你一块钱。 (Gửi bạn một đồng.)","group":"301 Tập 1 – Bài 11–15"},{"id":242,"audioId":"w_0a4df2a5ba","hanzi":"找","pinyin":"zhǎo","meaning":"tìm; thối lại (tiền thừa)","example":"找你六毛。 (Thối lại bạn 6 hào.)","group":"301 Tập 1 – Bài 11–15"},{"id":243,"audioId":"w_647477bbc5","hanzi":"会","pinyin":"huì","meaning":"biết (kỹ năng); sẽ","example":"你们会说汉语吗？ (Các bạn biết nói tiếng Trung không?)","group":"301 Tập 1 – Bài 11–15"},{"id":244,"audioId":"w_ddc9d3d10d","hanzi":"说","pinyin":"shuō","meaning":"nói","example":"会说一点儿。 (Biết nói một chút.)","group":"301 Tập 1 – Bài 11–15"},{"id":245,"audioId":"w_796019f7b0","hanzi":"一点儿","pinyin":"yìdiǎnr","meaning":"một chút","example":"一点儿也不累。 (Không mệt chút nào.)","group":"301 Tập 1 – Bài 11–15"},{"id":246,"audioId":"w_d5ceb8486d","hanzi":"懂","pinyin":"dǒng","meaning":"hiểu","example":"我说汉语，你懂吗？ (Tôi nói tiếng Trung, bạn hiểu không?)","group":"301 Tập 1 – Bài 11–15"},{"id":247,"audioId":"w_62f8ae5410","hanzi":"国","pinyin":"guó","meaning":"nước, quốc gia","example":"你们是哪国人？ (Các bạn là người nước nào?)","group":"301 Tập 1 – Bài 11–15"},{"id":248,"audioId":"w_f5818fdf08","hanzi":"法国","pinyin":"Fǎguó","meaning":"nước Pháp","example":"我是法国人。 (Tôi là người Pháp.)","group":"301 Tập 1 – Bài 11–15"},{"id":249,"audioId":"w_1efc978309","hanzi":"美国","pinyin":"Měiguó","meaning":"nước Mỹ","example":"我是美国人。 (Tôi là người Mỹ.)","group":"301 Tập 1 – Bài 11–15"},{"id":250,"audioId":"w_10294d422f","hanzi":"下车","pinyin":"xià chē","meaning":"xuống xe","example":"天安门到了，请下车吧。 (Đến Thiên An Môn rồi, mời xuống xe.)","group":"301 Tập 1 – Bài 11–15"},{"id":251,"audioId":"w_22dbba75b9","hanzi":"花","pinyin":"huā","meaning":"tiêu (tiền, thời gian); hoa","example":"钱都花了。 (Tiền tiêu hết rồi.)","group":"301 Tập 1 – Bài 11–15"},{"id":252,"audioId":"w_c187cd3413","hanzi":"听说","pinyin":"tīngshuō","meaning":"nghe nói","example":"听说饭店里可以换钱。 (Nghe nói trong khách sạn đổi được tiền.)","group":"301 Tập 1 – Bài 11–15"},{"id":253,"audioId":"w_860a6ded2d","hanzi":"饭店","pinyin":"fàndiàn","meaning":"khách sạn, nhà hàng","example":"我们在饭店门口见。 (Mình gặp nhau trước cổng khách sạn nhé.)","group":"301 Tập 1 – Bài 11–15"},{"id":254,"audioId":"w_27e4babc7e","hanzi":"营业员","pinyin":"yíngyèyuán","meaning":"giao dịch viên, nhân viên quầy","example":"请问营业员。 (Xin hỏi nhân viên quầy giao dịch.)","group":"301 Tập 1 – Bài 11–15"},{"id":255,"audioId":"w_9c0479617b","hanzi":"能","pinyin":"néng","meaning":"có thể","example":"这儿能不能换钱？ (Ở đây có đổi tiền được không?)","group":"301 Tập 1 – Bài 11–15"},{"id":256,"audioId":"w_66e2b6ac81","hanzi":"带","pinyin":"dài","meaning":"mang theo, dẫn theo","example":"您带的什么钱？ (Ngài mang theo loại tiền gì?)","group":"301 Tập 1 – Bài 11–15"},{"id":257,"audioId":"w_4727e7e1d9","hanzi":"美元","pinyin":"Měiyuán","meaning":"Đô la Mỹ","example":"五百美元 (500 USD)","group":"301 Tập 1 – Bài 11–15"},{"id":258,"audioId":"w_54af0a5df5","hanzi":"数","pinyin":"shǔ","meaning":"đếm","example":"请数一数。 (Xin hãy đếm lại.)","group":"301 Tập 1 – Bài 11–15"},{"id":259,"audioId":"w_19fcb9eb25","hanzi":"时间","pinyin":"shíjiān","meaning":"thời gian","example":"时间不早了。 (Thời gian không còn sớm nữa.)","group":"301 Tập 1 – Bài 11–15"},{"id":260,"audioId":"w_8fcedbfdde","hanzi":"快","pinyin":"kuài","meaning":"nhanh; sắp","example":"我们快走吧！ (Chúng mình đi nhanh thôi!)","group":"301 Tập 1 – Bài 11–15"},{"id":261,"audioId":"w_a861160989","hanzi":"寄","pinyin":"jì","meaning":"gửi (thư, bưu phẩm)","example":"我要寄包裹。 (Tôi muốn gửi bưu phẩm.)","group":"301 Tập 1 – Bài 11–15"},{"id":262,"audioId":"w_8df7c8a1f9","hanzi":"包裹","pinyin":"bāoguǒ","meaning":"bưu phẩm, gói hàng","example":"去邮局寄包裹。 (Ra bưu điện gửi bưu phẩm.)","group":"301 Tập 1 – Bài 11–15"},{"id":263,"audioId":"w_a5b3ce87a0","hanzi":"邮票","pinyin":"yóupiào","meaning":"tem thư","example":"有纪念邮票吗？ (Có tem kỷ niệm không?)","group":"301 Tập 1 – Bài 11–15"},{"id":264,"audioId":"w_5a631c6c29","hanzi":"新","pinyin":"xīn","meaning":"mới","example":"这是新出的邮票。 (Đây là tem mới phát hành.)","group":"301 Tập 1 – Bài 11–15"},{"id":265,"audioId":"w_8c32c77d90","hanzi":"好看","pinyin":"hǎokàn","meaning":"đẹp, ưa nhìn","example":"还有好看的吗？ (Còn mẫu nào đẹp nữa không?)","group":"301 Tập 1 – Bài 11–15"},{"id":266,"audioId":"w_5679e0e35b","hanzi":"帮","pinyin":"bāng","meaning":"giúp, giúp đỡ","example":"请你帮我挑挑。 (Nhờ bạn chọn giúp tôi với.)","group":"301 Tập 1 – Bài 11–15"},{"id":267,"audioId":"w_76b54f95cd","hanzi":"挑","pinyin":"tiāo","meaning":"chọn, lựa","example":"我帮你挑一套。 (Tôi giúp bạn chọn một bộ.)","group":"301 Tập 1 – Bài 11–15"},{"id":268,"audioId":"w_575345386c","hanzi":"打电话","pinyin":"dǎ diànhuà","meaning":"gọi điện thoại","example":"这儿能打国际电话吗？ (Ở đây có gọi điện quốc tế được không?)","group":"301 Tập 1 – Bài 11–15"},{"id":269,"audioId":"w_9b3b28f48a","hanzi":"国际","pinyin":"guójì","meaning":"quốc tế","example":"国际电话 (Điện thoại quốc tế)","group":"301 Tập 1 – Bài 11–15"},{"id":270,"audioId":"w_3eb7800dd4","hanzi":"号码","pinyin":"hàomǎ","meaning":"số (điện thoại, mã số)","example":"电话号码是多少？ (Số điện thoại là bao nhiêu?)","group":"301 Tập 1 – Bài 11–15"},{"id":271,"audioId":"w_f9a03fb302","hanzi":"先","pinyin":"xiān","meaning":"trước","example":"要先交钱吗？ (Có cần trả tiền trước không?)","group":"301 Tập 1 – Bài 11–15"},{"id":272,"audioId":"w_07875df400","hanzi":"交","pinyin":"jiāo","meaning":"nộp, giao, trả","example":"先交钱。 (Trả tiền trước.)","group":"301 Tập 1 – Bài 11–15"},{"id":273,"audioId":"w_7be26aa3de","hanzi":"京剧","pinyin":"jīngjù","meaning":"kinh kịch","example":"你看过京剧吗？ (Bạn đã xem kinh kịch bao giờ chưa?)","group":"301 Tập 1 – Bài 16–20"},{"id":274,"audioId":"w_323bf89a32","hanzi":"意思","pinyin":"yìsi","meaning":"ý nghĩa; thú vị","example":"听说很有意思。 (Nghe nói thú vị lắm.)","group":"301 Tập 1 – Bài 16–20"},{"id":275,"audioId":"w_5449d15a40","hanzi":"剧场","pinyin":"jùchǎng","meaning":"nhà hát","example":"人民剧场常演京剧。 (Nhà hát Nhân Dân hay diễn kinh kịch.)","group":"301 Tập 1 – Bài 16–20"},{"id":276,"audioId":"w_381bacb64a","hanzi":"演","pinyin":"yǎn","meaning":"biểu diễn, đóng","example":"你知道哪儿演吗？ (Bạn biết ở đâu biểu diễn không?)","group":"301 Tập 1 – Bài 16–20"},{"id":277,"audioId":"w_16891cf279","hanzi":"烤鸭","pinyin":"kǎoyā","meaning":"vịt quay","example":"烤鸭是北京的名菜。 (Vịt quay là món nổi tiếng của Bắc Kinh.)","group":"301 Tập 1 – Bài 16–20"},{"id":278,"audioId":"w_0ba279fe9b","hanzi":"名菜","pinyin":"míngcài","meaning":"món ăn nổi tiếng","example":"这是北京名菜。 (Đây là món nổi tiếng Bắc Kinh.)","group":"301 Tập 1 – Bài 16–20"},{"id":279,"audioId":"w_a52b77dfc6","hanzi":"吃","pinyin":"chī","meaning":"ăn","example":"你吃过烤鸭没有？ (Bạn đã ăn vịt quay chưa?)","group":"301 Tập 1 – Bài 16–20"},{"id":280,"audioId":"w_e98e3093b8","hanzi":"门口","pinyin":"ménkǒu","meaning":"cổng, cửa ra vào","example":"我在门口等你。 (Tôi đợi bạn ở cổng.)","group":"301 Tập 1 – Bài 16–20"},{"id":281,"audioId":"w_e4e06820c7","hanzi":"出去","pinyin":"chūqù","meaning":"đi ra ngoài","example":"我们出去玩儿玩儿吧。 (Chúng mình ra ngoài chơi đi.)","group":"301 Tập 1 – Bài 16–20"},{"id":282,"audioId":"w_24e570eb51","hanzi":"划船","pinyin":"huáchuán","meaning":"chèo thuyền","example":"去北海公园划船。 (Đi công viên Bắc Hải chèo thuyền.)","group":"301 Tập 1 – Bài 16–20"},{"id":283,"audioId":"w_333209320a","hanzi":"动物园","pinyin":"dòngwùyuán","meaning":"sở thú, vườn bách thú","example":"去动物园怎么样？ (Đi sở thú thế nào?)","group":"301 Tập 1 – Bài 16–20"},{"id":284,"audioId":"w_2d5aef4f24","hanzi":"行","pinyin":"xíng","meaning":"được, ổn","example":"行，星期天去吧。 (Được đấy, Chủ nhật đi nhé.)","group":"301 Tập 1 – Bài 16–20"},{"id":285,"audioId":"w_ae27871bdd","hanzi":"大熊猫","pinyin":"dàxióngmāo","meaning":"gấu trúc lớn","example":"动物园有大熊猫。 (Trong sở thú có gấu trúc lớn.)","group":"301 Tập 1 – Bài 16–20"},{"id":286,"audioId":"w_9d53230a95","hanzi":"朋友","pinyin":"péngyou","meaning":"bạn bè","example":"他是我中国朋友。 (Anh ấy là bạn Trung Quốc của tôi.)","group":"301 Tập 1 – Bài 16–20"},{"id":287,"audioId":"w_1dead9a89c","hanzi":"后天","pinyin":"hòutiān","meaning":"ngày kia","example":"他后天来北京。 (Ngày kia anh ấy đến Bắc Kinh.)","group":"301 Tập 1 – Bài 16–20"},{"id":288,"audioId":"w_0cc05f4268","hanzi":"从","pinyin":"cóng","meaning":"từ (điểm xuất phát)","example":"从东京来的飞机到了吗？ (Máy bay từ Tokyo đến chưa?)","group":"301 Tập 1 – Bài 16–20"},{"id":289,"audioId":"w_4dbed2e657","hanzi":"日本","pinyin":"Rìběn","meaning":"Nhật Bản","example":"他从日本来。 (Anh ấy từ Nhật Bản đến.)","group":"301 Tập 1 – Bài 16–20"},{"id":290,"audioId":"w_87483408cf","hanzi":"旅行","pinyin":"lǚxíng","meaning":"du lịch","example":"他来北京旅行。 (Anh ấy đến Bắc Kinh du lịch.)","group":"301 Tập 1 – Bài 16–20"},{"id":291,"audioId":"w_6afdff6f53","hanzi":"一定","pinyin":"yídìng","meaning":"nhất định, chắc chắn","example":"那一定很有意思。 (Chắc chắn sẽ rất thú vị.)","group":"301 Tập 1 – Bài 16–20"},{"id":292,"audioId":"w_291b5c616c","hanzi":"觉得","pinyin":"juéde","meaning":"cảm thấy, cho rằng","example":"我觉得很好吃。 (Tôi thấy rất ngon.)","group":"301 Tập 1 – Bài 16–20"},{"id":293,"audioId":"w_16678800cf","hanzi":"飞机","pinyin":"fēijī","meaning":"máy bay","example":"飞机现在在上海。 (Máy bay hiện đang ở Thượng Hải.)","group":"301 Tập 1 – Bài 16–20"},{"id":294,"audioId":"w_d716f1e8a1","hanzi":"到","pinyin":"dào","meaning":"đến, tới","example":"飞机到了吗？ (Máy bay đến chưa?)","group":"301 Tập 1 – Bài 16–20"},{"id":295,"audioId":"w_787c5438c7","hanzi":"服务员","pinyin":"fúwùyuán","meaning":"nhân viên phục vụ","example":"服务员，来两杯茶。 (Phục vụ ơi, cho hai cốc trà.)","group":"301 Tập 1 – Bài 16–20"},{"id":296,"audioId":"w_cf9e991128","hanzi":"为什么","pinyin":"wèishénme","meaning":"tại sao, vì sao","example":"为什么晚点了？ (Tại sao bị trễ giờ vậy?)","group":"301 Tập 1 – Bài 16–20"},{"id":297,"audioId":"w_e63e87a6db","hanzi":"晚点","pinyin":"wǎndiǎn","meaning":"trễ giờ (máy bay, tàu xe)","example":"飞机晚点了。 (Máy bay bị trễ giờ rồi.)","group":"301 Tập 1 – Bài 16–20"},{"id":298,"audioId":"w_644c7421c8","hanzi":"起飞","pinyin":"qǐfēi","meaning":"cất cánh","example":"飞机快要起飞了。 (Máy bay sắp cất cánh rồi.)","group":"301 Tập 1 – Bài 16–20"},{"id":299,"audioId":"w_35b2d2a11d","hanzi":"大概","pinyin":"dàgài","meaning":"đại khái, khoảng chừng","example":"大概三点半能到。 (Khoảng 3 rưỡi có thể đến.)","group":"301 Tập 1 – Bài 16–20"},{"id":300,"audioId":"w_57df27116d","hanzi":"喝","pinyin":"hē","meaning":"uống","example":"我们先去喝点儿水。 (Mình đi uống chút nước trước đi.)","group":"301 Tập 1 – Bài 16–20"},{"id":301,"audioId":"w_eab619fba2","hanzi":"水","pinyin":"shuǐ","meaning":"nước","example":"喝杯水吧。 (Uống cốc nước đi.)","group":"301 Tập 1 – Bài 16–20"},{"id":302,"audioId":"w_ed88192c19","hanzi":"一会儿","pinyin":"yíhuìr","meaning":"một lát, một lúc","example":"一会儿再来这儿。 (Lát nữa quay lại đây.)","group":"301 Tập 1 – Bài 16–20"},{"id":303,"audioId":"w_d6d71dc97b","hanzi":"一路","pinyin":"yílù","meaning":"suốt đường, dọc đường","example":"一路辛苦了！ (Đi đường vất vả rồi!)","group":"301 Tập 1 – Bài 16–20"},{"id":304,"audioId":"w_874d7a16ea","hanzi":"辛苦","pinyin":"xīnkǔ","meaning":"vất vả","example":"您一路辛苦了！ (Ngài đi đường vất vả rồi!)","group":"301 Tập 1 – Bài 16–20"},{"id":305,"audioId":"w_cf10dcb8d7","hanzi":"位","pinyin":"wèi","meaning":"vị (lượng từ lịch sự chỉ người)","example":"这位是张老师。 (Vị này là thầy Trương.)","group":"301 Tập 1 – Bài 16–20"},{"id":306,"audioId":"w_1f9820d215","hanzi":"先生","pinyin":"xiānsheng","meaning":"ông, anh, ngài","example":"您好，西川先生！ (Xin chào ông Nishikawa!)","group":"301 Tập 1 – Bài 16–20"},{"id":307,"audioId":"w_41716f87c3","hanzi":"公司","pinyin":"gōngsī","meaning":"công ty","example":"我是公司的翻译。 (Tôi là phiên dịch của công ty.)","group":"301 Tập 1 – Bài 16–20"},{"id":308,"audioId":"w_8b3607d0f4","hanzi":"翻译","pinyin":"fānyì","meaning":"phiên dịch; dịch","example":"我做翻译工作。 (Tôi làm công việc phiên dịch.)","group":"301 Tập 1 – Bài 16–20"},{"id":309,"audioId":"w_60efc0710c","hanzi":"接","pinyin":"jiē","meaning":"đón; nhận, nghe (điện thoại)","example":"谢谢您来接我。 (Cảm ơn anh đã đến đón tôi.)","group":"301 Tập 1 – Bài 16–20"},{"id":310,"audioId":"w_81321c0105","hanzi":"别客气","pinyin":"bié kèqi","meaning":"đừng khách sáo","example":"吃啊，别客气！ (Ăn đi, đừng khách sáo!)","group":"301 Tập 1 – Bài 16–20"},{"id":311,"audioId":"w_af467b208f","hanzi":"累","pinyin":"lèi","meaning":"mệt","example":"一点儿也不累。 (Không mệt chút nào.)","group":"301 Tập 1 – Bài 16–20"},{"id":312,"audioId":"w_3924ae88c8","hanzi":"顺利","pinyin":"shùnlì","meaning":"thuận lợi, suôn sẻ","example":"一路很顺利。 (Chuyến đi rất thuận lợi.)","group":"301 Tập 1 – Bài 16–20"},{"id":313,"audioId":"w_4fdd365e69","hanzi":"外边","pinyin":"wàibian","meaning":"bên ngoài","example":"汽车在外边。 (Xe ở bên ngoài.)","group":"301 Tập 1 – Bài 16–20"},{"id":314,"audioId":"w_040f3943c3","hanzi":"送","pinyin":"sòng","meaning":"tiễn, đưa; tặng","example":"我们送您去饭店。 (Chúng tôi đưa ông về khách sạn.)","group":"301 Tập 1 – Bài 16–20"},{"id":315,"audioId":"w_5c76a64cee","hanzi":"经理","pinyin":"jīnglǐ","meaning":"giám đốc, quản lý","example":"这是我们公司经理。 (Đây là giám đốc công ty chúng tôi.)","group":"301 Tập 1 – Bài 16–20"},{"id":316,"audioId":"w_5a7958d89e","hanzi":"真","pinyin":"zhēn","meaning":"thật, thật là","example":"北京的天气真好！ (Thời tiết Bắc Kinh đẹp thật!)","group":"301 Tập 1 – Bài 16–20"},{"id":317,"audioId":"w_c3097ae1fd","hanzi":"不错","pinyin":"búcuò","meaning":"không tệ, khá tốt","example":"这个房间真不错。 (Căn phòng này ổn quá.)","group":"301 Tập 1 – Bài 16–20"},{"id":318,"audioId":"w_3a991a4ca5","hanzi":"休息","pinyin":"xiūxi","meaning":"nghỉ ngơi","example":"您先休息一下儿。 (Ông nghỉ ngơi một chút trước đi.)","group":"301 Tập 1 – Bài 16–20"},{"id":319,"audioId":"w_a4c566f849","hanzi":"过","pinyin":"guò","meaning":"qua, trải qua; đón (lễ)","example":"这两天过得怎么样？ (Mấy hôm nay sống thế nào?)","group":"301 Tập 1 – Bài 16–20"},{"id":320,"audioId":"w_7cee70943e","hanzi":"愉快","pinyin":"yúkuài","meaning":"vui vẻ, thoải mái","example":"过得很愉快！ (Sống rất vui vẻ!)","group":"301 Tập 1 – Bài 16–20"},{"id":321,"audioId":"w_811ba9ddbf","hanzi":"酒","pinyin":"jiǔ","meaning":"rượu","example":"您喜欢喝什么酒？ (Ông thích uống rượu gì?)","group":"301 Tập 1 – Bài 16–20"},{"id":322,"audioId":"w_5fbf343679","hanzi":"啤酒","pinyin":"píjiǔ","meaning":"bia","example":"我喝啤酒吧。 (Tôi uống bia nhé.)","group":"301 Tập 1 – Bài 16–20"},{"id":323,"audioId":"w_3ee77c8ef9","hanzi":"菜","pinyin":"cài","meaning":"món ăn; rau","example":"中国菜很好吃。 (Món ăn Trung Quốc rất ngon.)","group":"301 Tập 1 – Bài 16–20"},{"id":324,"audioId":"w_a78e4f228b","hanzi":"好吃","pinyin":"hǎochī","meaning":"ngon (đồ ăn)","example":"这个菜真好吃！ (Món này ngon thật!)","group":"301 Tập 1 – Bài 16–20"},{"id":325,"audioId":"w_a994531a27","hanzi":"友谊","pinyin":"yǒuyì","meaning":"tình hữu nghị, tình bạn","example":"为我们的友谊干杯！ (Cạn ly vì tình bạn của chúng ta!)","group":"301 Tập 1 – Bài 16–20"},{"id":326,"audioId":"w_1e69a0b68e","hanzi":"干杯","pinyin":"gānbēi","meaning":"cạn ly, chúc mừng","example":"来，干杯！ (Nào, cạn ly!)","group":"301 Tập 1 – Bài 16–20"},{"id":327,"audioId":"w_96c75b9ed7","hanzi":"特色","pinyin":"tèsè","meaning":"đặc sắc","example":"中国菜很有特色。 (Món Trung Hoa rất đặc sắc.)","group":"301 Tập 1 – Bài 16–20"},{"id":328,"audioId":"w_367c9508e7","hanzi":"喂","pinyin":"wèi","meaning":"a lô (nghe điện thoại)","example":"喂，请问是北京大学吗？ (Alo, xin hỏi có phải ĐH Bắc Kinh không?)","group":"301 Tập 1 – Bài 21–25"},{"id":329,"audioId":"w_1c42131860","hanzi":"转","pinyin":"zhuǎn","meaning":"chuyển (máy, hướng)","example":"请转239分机。 (Xin chuyển máy lẻ 239.)","group":"301 Tập 1 – Bài 21–25"},{"id":330,"audioId":"w_f61cde1d3b","hanzi":"分机","pinyin":"fēnjī","meaning":"máy lẻ, số máy nhánh","example":"请帮我转分机。 (Xin chuyển giúp tôi số máy lẻ.)","group":"301 Tập 1 – Bài 21–25"},{"id":331,"audioId":"w_cd4c423945","hanzi":"系","pinyin":"xì","meaning":"khoa (trong trường đại học)","example":"中文系在三楼。 (Khoa Trung văn ở tầng 3.)","group":"301 Tập 1 – Bài 21–25"},{"id":332,"audioId":"w_a2618bdd43","hanzi":"事","pinyin":"shì","meaning":"việc, sự việc","example":"您找她有什么事？ (Chị tìm cô ấy có việc gì không?)","group":"301 Tập 1 – Bài 21–25"},{"id":333,"audioId":"w_95c9f31304","hanzi":"回来","pinyin":"huílái","meaning":"trở về, quay lại","example":"她回来以后请给我打电话。 (Cô ấy về thì bảo gọi lại cho tôi nhé.)","group":"301 Tập 1 – Bài 21–25"},{"id":334,"audioId":"w_ce818f7ec1","hanzi":"感谢","pinyin":"gǎnxiè","meaning":"cảm tạ, cảm ơn","example":"非常感谢！ (Vô cùng cảm ơn!)","group":"301 Tập 1 – Bài 21–25"},{"id":335,"audioId":"w_04cdaa62a9","hanzi":"非常","pinyin":"fēicháng","meaning":"vô cùng, rất","example":"我非常高兴。 (Tôi vô cùng vui mừng.)","group":"301 Tập 1 – Bài 21–25"},{"id":336,"audioId":"w_b0fbe85504","hanzi":"话剧","pinyin":"huàjù","meaning":"kịch nói","example":"我买了两张话剧票。 (Tôi mua 2 vé kịch nói.)","group":"301 Tập 1 – Bài 21–25"},{"id":337,"audioId":"w_e3fbec2ead","hanzi":"哎呀","pinyin":"āiyā","meaning":"ôi chao, trời ơi (thán từ)","example":"哎呀，真不巧！ (Ôi chao, không khéo chút nào!)","group":"301 Tập 1 – Bài 21–25"},{"id":338,"audioId":"w_84c946057c","hanzi":"巧","pinyin":"qiǎo","meaning":"khéo, trùng hợp","example":"怎么那么巧啊！ (Sao lại trùng hợp thế!)","group":"301 Tập 1 – Bài 21–25"},{"id":339,"audioId":"w_7746fb87c6","hanzi":"考试","pinyin":"kǎoshì","meaning":"thi cử, kỳ thi","example":"明天就考试了。 (Mai là thi rồi.)","group":"301 Tập 1 – Bài 21–25"},{"id":340,"audioId":"w_1d0bd4090d","hanzi":"画展","pinyin":"huàzhǎn","meaning":"triển lãm tranh","example":"明天有个画展。 (Ngày mai có triển lãm tranh.)","group":"301 Tập 1 – Bài 21–25"},{"id":341,"audioId":"w_365caf02cc","hanzi":"可是","pinyin":"kěshì","meaning":"nhưng, thế nhưng","example":"我想去，可是没时间。 (Tôi muốn đi, nhưng không có thời gian.)","group":"301 Tập 1 – Bài 21–25"},{"id":342,"audioId":"w_d8944f2e20","hanzi":"约会","pinyin":"yuēhuì","meaning":"cuộc hẹn, hẹn hò","example":"明天我有个约会。 (Ngày mai tôi có một cuộc hẹn.)","group":"301 Tập 1 – Bài 21–25"},{"id":343,"audioId":"w_94c1edad01","hanzi":"下次","pinyin":"xià cì","meaning":"lần sau","example":"下次我一定去。 (Lần sau nhất định tôi sẽ đi.)","group":"301 Tập 1 – Bài 21–25"},{"id":344,"audioId":"w_cd51c8c91e","hanzi":"对不起","pinyin":"duìbuqǐ","meaning":"xin lỗi","example":"对不起，让你久等了。 (Xin lỗi, để bạn đợi lâu rồi.)","group":"301 Tập 1 – Bài 21–25"},{"id":345,"audioId":"w_167bb5dcc6","hanzi":"让","pinyin":"ràng","meaning":"bảo, để, nhường","example":"让你久等了。 (Để bạn phải đợi lâu rồi.)","group":"301 Tập 1 – Bài 21–25"},{"id":346,"audioId":"w_1a2c726632","hanzi":"久","pinyin":"jiǔ","meaning":"lâu (thời gian)","example":"好久不见！ (Lâu lắm không gặp!)","group":"301 Tập 1 – Bài 21–25"},{"id":347,"audioId":"w_cef3bb04c6","hanzi":"才","pinyin":"cái","meaning":"mới (muộn hơn dự kiến)","example":"你怎么八点半才来？ (Sao 8 rưỡi bạn mới đến thế?)","group":"301 Tập 1 – Bài 21–25"},{"id":348,"audioId":"w_8b09d367da","hanzi":"抱歉","pinyin":"bàoqiàn","meaning":"áy náy, xin lỗi","example":"真抱歉，我来晚了。 (Thật áy náy, tôi đến muộn rồi.)","group":"301 Tập 1 – Bài 21–25"},{"id":349,"audioId":"w_9299aa7aca","hanzi":"晚","pinyin":"wǎn","meaning":"muộn, trễ; buổi tối","example":"我来晚了。 (Tôi đến muộn rồi.)","group":"301 Tập 1 – Bài 21–25"},{"id":350,"audioId":"w_b73c6e34a1","hanzi":"自行车","pinyin":"zìxíngchē","meaning":"xe đạp","example":"我的自行车坏了。 (Xe đạp của tôi hỏng rồi.)","group":"301 Tập 1 – Bài 21–25"},{"id":351,"audioId":"w_88b5b7181b","hanzi":"坏","pinyin":"huài","meaning":"hỏng, xấu","example":"照相机坏了吗？ (Máy ảnh bị hỏng à?)","group":"301 Tập 1 – Bài 21–25"},{"id":352,"audioId":"w_5608f15385","hanzi":"修","pinyin":"xiū","meaning":"sửa, sửa chữa","example":"自行车修好了。 (Xe đạp sửa xong rồi.)","group":"301 Tập 1 – Bài 21–25"},{"id":353,"audioId":"w_ca63dc0953","hanzi":"可能","pinyin":"kěnéng","meaning":"có lẽ, có thể","example":"我想你可能不来了。 (Tôi cứ tưởng bạn không đến nữa.)","group":"301 Tập 1 – Bài 21–25"},{"id":354,"audioId":"w_4a1636146d","hanzi":"电影院","pinyin":"diànyǐngyuàn","meaning":"rạp chiếu phim","example":"我们进电影院去吧。 (Chúng mình vào rạp chiếu phim đi.)","group":"301 Tập 1 – Bài 21–25"},{"id":355,"audioId":"w_2de4b05704","hanzi":"照相","pinyin":"zhàoxiàng","meaning":"chụp ảnh","example":"我们在长城照相。 (Chúng tôi chụp ảnh ở Trường Thành.)","group":"301 Tập 1 – Bài 21–25"},{"id":356,"audioId":"w_d2fb1e3e17","hanzi":"照片","pinyin":"zhàopiàn","meaning":"bức ảnh","example":"照片洗了吗？ (Ảnh đã rửa chưa?)","group":"301 Tập 1 – Bài 21–25"},{"id":357,"audioId":"w_d96561075f","hanzi":"洗","pinyin":"xǐ","meaning":"giặt, rửa","example":"洗照片 / 洗手 (Rửa ảnh / Rửa tay)","group":"301 Tập 1 – Bài 21–25"},{"id":358,"audioId":"w_9d675a3344","hanzi":"糟糕","pinyin":"zāogāo","meaning":"hỏng bét, tệ hại","example":"真糟糕，都没照上！ (Chán thật, chẳng chụp được tấm nào!)","group":"301 Tập 1 – Bài 21–25"},{"id":359,"audioId":"w_c120e0fbc2","hanzi":"照相机","pinyin":"zhàoxiàngjī","meaning":"máy ảnh","example":"我的照相机没坏。 (Máy ảnh của tôi không hỏng.)","group":"301 Tập 1 – Bài 21–25"},{"id":360,"audioId":"w_b28daa712f","hanzi":"胶卷儿","pinyin":"jiāojuǎnr","meaning":"cuộn phim (chụp ảnh)","example":"胶卷儿没上好。 (Cuộn phim lắp chưa đúng.)","group":"301 Tập 1 – Bài 21–25"},{"id":361,"audioId":"w_550b549d21","hanzi":"真的","pinyin":"zhēn de","meaning":"thật không, thật đấy","example":"真的吗？太好了！ (Thật à? Tuyệt quá!)","group":"301 Tập 1 – Bài 21–25"},{"id":362,"audioId":"w_26baf02931","hanzi":"可惜","pinyin":"kěxī","meaning":"đáng tiếc","example":"太可惜了！ (Đáng tiếc quá!)","group":"301 Tập 1 – Bài 21–25"},{"id":363,"audioId":"w_39a28993b4","hanzi":"遗憾","pinyin":"yíhàn","meaning":"tiếc nuối, lấy làm tiếc","example":"我也觉得很遗憾。 (Tôi cũng thấy rất tiếc.)","group":"301 Tập 1 – Bài 21–25"},{"id":364,"audioId":"w_ac85b3780c","hanzi":"没关系","pinyin":"méi guānxi","meaning":"không sao đâu","example":"没关系，下次再去。 (Không sao đâu, lần sau đi lại.)","group":"301 Tập 1 – Bài 21–25"},{"id":365,"audioId":"w_af545d2bb4","hanzi":"布置","pinyin":"bùzhì","meaning":"bài trí, trang trí, bố trí","example":"你的房间布置得好极了。 (Phòng bạn bài trí đẹp tuyệt.)","group":"301 Tập 1 – Bài 21–25"},{"id":366,"audioId":"w_fca6ee3b2f","hanzi":"马马虎虎","pinyin":"mǎmǎhūhū","meaning":"tàm tạm, bình thường","example":"哪儿啊，马马虎虎。 (Đâu có, cũng tàm tạm thôi.)","group":"301 Tập 1 – Bài 21–25"},{"id":367,"audioId":"w_9e2fde20b6","hanzi":"桌子","pinyin":"zhuōzi","meaning":"cái bàn","example":"桌子放在这儿。 (Cái bàn đặt ở đây.)","group":"301 Tập 1 – Bài 21–25"},{"id":368,"audioId":"w_cedaabc91c","hanzi":"放","pinyin":"fàng","meaning":"đặt, để","example":"手机放在桌子上。 (Điện thoại để trên bàn.)","group":"301 Tập 1 – Bài 21–25"},{"id":369,"audioId":"w_8a30f75b75","hanzi":"写字","pinyin":"xiězì","meaning":"viết chữ","example":"这张桌子写字很好。 (Cái bàn này viết chữ rất tiện.)","group":"301 Tập 1 – Bài 21–25"},{"id":370,"audioId":"w_e3ccf0942c","hanzi":"看书","pinyin":"kànshū","meaning":"đọc sách","example":"我喜欢在房间看书。 (Tôi thích đọc sách trong phòng.)","group":"301 Tập 1 – Bài 21–25"},{"id":371,"audioId":"w_c6691d2ef9","hanzi":"衣柜","pinyin":"yīguì","meaning":"tủ quần áo","example":"衣柜放在床旁边。 (Tủ quần áo đặt cạnh giường.)","group":"301 Tập 1 – Bài 21–25"},{"id":372,"audioId":"w_1696a59602","hanzi":"床","pinyin":"chuáng","meaning":"cái giường","example":"床旁边有一张桌子。 (Cạnh giường có một cái bàn.)","group":"301 Tập 1 – Bài 21–25"},{"id":373,"audioId":"w_c7f7acf5b6","hanzi":"拿","pinyin":"ná","meaning":"cầm, lấy","example":"拿东西很方便。 (Lấy đồ rất tiện.)","group":"301 Tập 1 – Bài 21–25"},{"id":374,"audioId":"w_e6af86c791","hanzi":"方便","pinyin":"fāngbiàn","meaning":"tiện lợi, thuận tiện","example":"坐地铁很方便。 (Đi tàu điện ngầm rất tiện.)","group":"301 Tập 1 – Bài 21–25"},{"id":375,"audioId":"w_5a93a27052","hanzi":"美","pinyin":"měi","meaning":"đẹp","example":"这张画儿真美！ (Bức tranh này đẹp thật!)","group":"301 Tập 1 – Bài 21–25"},{"id":376,"audioId":"w_70b21e84df","hanzi":"刚","pinyin":"gāng","meaning":"vừa mới","example":"这件衣服是刚买的。 (Bộ quần áo này vừa mới mua đấy.)","group":"301 Tập 1 – Bài 21–25"},{"id":377,"audioId":"w_a00d04d240","hanzi":"干净","pinyin":"gānjìng","meaning":"sạch sẽ","example":"你的房间又干净又漂亮。 (Phòng bạn vừa sạch lại vừa đẹp.)","group":"301 Tập 1 – Bài 21–25"},{"id":378,"audioId":"w_d46d5bb15d","hanzi":"新年","pinyin":"xīnnián","meaning":"năm mới","example":"新年快到了！ (Năm mới sắp đến rồi!)","group":"301 Tập 1 – Bài 21–25"},{"id":379,"audioId":"w_f820332191","hanzi":"打扫","pinyin":"dǎsao","meaning":"quét dọn, dọn dẹp","example":"房间要打扫打扫。 (Phòng cần dọn dẹp một chút.)","group":"301 Tập 1 – Bài 21–25"}];
+    /* __VOCAB_DATA_END__ */
+
+    // =========================================================================
+    // 1. Pinyin Parsing, Tone Coloring & Phonetic Similarity Engine
+    // =========================================================================
+    const TONE_CHAR_MAP = {
+      'ā':['a',1],'á':['a',2],'ǎ':['a',3],'à':['a',4],
+      'ē':['e',1],'é':['e',2],'ě':['e',3],'è':['e',4],
+      'ī':['i',1],'í':['i',2],'ǐ':['i',3],'ì':['i',4],
+      'ō':['o',1],'ó':['o',2],'ǒ':['o',3],'ò':['o',4],
+      'ū':['u',1],'ú':['u',2],'ǔ':['u',3],'ù':['u',4],
+      'ǖ':['ü',1],'ǘ':['ü',2],'ǚ':['ü',3],'ǜ':['ü',4]
+    };
+
+    const VALID_INITIALS = ['zh','ch','sh','b','p','m','f','d','t','n','l','g','k','h','j','q','x','r','z','c','s','y','w'];
+
+    // Regex matching valid Mandarin syllables (longest match)
+    const SYLLABLE_RE = /^(zh|ch|sh|[bpmfdtnlgkhjqxrzcsyw])?(iang|iong|uang|ueng|iao|ian|uan|uai|uei|iou|ang|eng|ing|ong|ai|ei|ao|ou|an|en|in|un|ün|ia|ie|iu|ua|uo|ui|üe|ue|ve|er|[aeiouüv])(r)?/i;
+
+    function detectTone(syllable) {
+      for (const ch of syllable) {
+        if (TONE_CHAR_MAP[ch]) return TONE_CHAR_MAP[ch][1];
+      }
+      return 5;
+    }
+
+    function stripTone(syllable) {
+      let out = '';
+      for (const ch of syllable.toLowerCase()) {
+        if (TONE_CHAR_MAP[ch]) out += TONE_CHAR_MAP[ch][0];
+        else out += ch;
+      }
+      return out.replace(/v/g, 'ü');
+    }
+
+    function tokenizePinyin(pinyinStr) {
+      const tokens = [];
+      const chunks = (pinyinStr || '').trim().split(/[\s'’]+/).filter(Boolean);
+      for (const rawChunk of chunks) {
+        let rest = rawChunk;
+        while (rest.length > 0) {
+          // Handle punctuation inside pinyin
+          if (/^[^a-zA-Zāáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜü]+/.test(rest)) {
+            rest = rest.replace(/^[^a-zA-Zāáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜü]+/, '');
+            continue;
+          }
+          const plainRest = stripTone(rest);
+          const m = plainRest.match(SYLLABLE_RE);
+          if (m && m[0].length > 0) {
+            const len = m[0].length;
+            const seg = rest.slice(0, len);
+            tokens.push({ text: seg, base: stripTone(seg), tone: detectTone(seg) });
+            rest = rest.slice(len);
+          } else {
+            tokens.push({ text: rest, base: stripTone(rest), tone: detectTone(rest) });
+            break;
+          }
+        }
+      }
+      return tokens;
+    }
+
+    function syllableSkeleton(base) {
+      let init = '';
+      let fin = base.replace(/ü/g, 'v');
+      for (const cand of VALID_INITIALS) {
+        if (fin.startsWith(cand)) {
+          init = cand;
+          fin = fin.slice(cand.length);
+          break;
+        }
+      }
+      // Group confusable initials & finals together
+      const initMap = { zh:'z', ch:'c', sh:'s', p:'b', t:'d', k:'g', q:'j', x:'j', l:'n' };
+      const normInit = initMap[init] || init;
+
+      let normFin = fin
+        .replace(/iang$/, 'ian')
+        .replace(/uang$/, 'uan')
+        .replace(/ang$/, 'an')
+        .replace(/eng$/, 'en')
+        .replace(/ing$/, 'in')
+        .replace(/v/g, 'u');
+
+      // Special cases: yi/y/i, wu/w/u, yu/j/q/x+u
+      if (normInit === 'y' && normFin === 'i') return 'i';
+      if (normInit === 'w' && normFin === 'u') return 'u';
+      return normInit + normFin;
+    }
+
+    function computePhoneticMeta(card) {
+      const tokens = tokenizePinyin(card.pinyin);
+      const t0 = tokens[0] || { base: '', tone: 5 };
+      const t1 = tokens[1] || { base: '', tone: 5 };
+      const sk0 = syllableSkeleton(t0.base);
+      const sk1 = tokens[1] ? syllableSkeleton(t1.base) : '';
+      const label = tokens.length > 0 ? `Nhóm âm: ${sk0 || t0.base}` : 'Nhóm âm';
+      return {
+        tokens,
+        sk0,
+        b0: t0.base,
+        tone0: t0.tone,
+        sk1,
+        b1: t1.base,
+        tone1: t1.tone,
+        label
+      };
+    }
+
+    function comparePhonetic(a, b) {
+      const pa = a._ph || (a._ph = computePhoneticMeta(a));
+      const pb = b._ph || (b._ph = computePhoneticMeta(b));
+      return (
+        pa.sk0.localeCompare(pb.sk0) ||
+        pa.b0.localeCompare(pb.b0) ||
+        pa.tone0 - pb.tone0 ||
+        pa.sk1.localeCompare(pb.sk1) ||
+        pa.b1.localeCompare(pb.b1) ||
+        pa.tone1 - pb.tone1 ||
+        a.hanzi.localeCompare(b.hanzi, 'zh-CN')
+      );
+    }
+
+    // =========================================================================
+    // 2. State & Persistence
+    // =========================================================================
+    const STORAGE_KEY = 'cn_flashcard_v1_state';
+    const DEFAULT_STATE = {
+      theme: 'light',
+      sort: 'phonetic',
+      front: 'hanzi',
+      group: 'ALL',
+      speed: 1,
+      autoPlay: false,
+      preferredGender: 'female',
+      syncUrl: '',
+      autoSync: true,
+      lastSyncAt: null,
+      lastSyncKind: '',
+      statusMap: {}, // hanzi -> 'known' | 'review'
+      customDeck: null
+    };
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return { ...DEFAULT_STATE };
+        return { ...DEFAULT_STATE, ...JSON.parse(raw) };
+      } catch {
+        return { ...DEFAULT_STATE };
+      }
+    }
+
+    let state = loadState();
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch {
+        // Ignore storage quota errors
+      }
+    }
+
+    let allCards = [];
+    let activeDeck = [];
+    let currentIndex = 0;
+    let isFlipped = false;
+    let randomSeedOrder = [];
+
+    function fillMissingPinyin(hanzi) {
+      try {
+        if (window.pinyinPro && typeof window.pinyinPro.pinyin === 'function') {
+          return window.pinyinPro.pinyin(hanzi, { toneType: 'symbol' }) || '';
+        }
+      } catch {}
+      return '';
+    }
+
+    function initCardsFromSource(sourceCards) {
+      const idByHanzi = new Map(INITIAL_VOCAB.map(c => [c.hanzi, c.audioId]));
+      allCards = sourceCards.map((c, idx) => {
+        const py = (c.pinyin || '').trim() || fillMissingPinyin(c.hanzi);
+        return {
+          ...c,
+          id: c.id || idx + 1,
+          pinyin: py,
+          audioId: c.audioId || idByHanzi.get(c.hanzi) || null,
+          _ph: null
+        };
+      });
+      allCards.forEach(c => { c._ph = computePhoneticMeta(c); });
+      populateGroupSelect();
+      applyFiltersAndSort(true);
+    }
+
+    // =========================================================================
+    // 3. Hybrid 2-Layer Audio Engine (MP3 Neural -> SpeechSynthesis Fallback)
+    // =========================================================================
+    const audioEl = new Audio();
+    audioEl.preload = 'none';
+    let cachedVoices = [];
+
+    function refreshVoices() {
+      if (!('speechSynthesis' in window)) return;
+      cachedVoices = window.speechSynthesis.getVoices() || [];
+    }
+    if ('speechSynthesis' in window) {
+      refreshVoices();
+      window.speechSynthesis.onvoiceschanged = refreshVoices;
+    }
+
+    function pickZhVoice(gender) {
+      const zhVoices = cachedVoices.filter(v => /zh|cmn|chinese/i.test(v.lang));
+      if (!zhVoices.length) return { voice: null, exactGender: false };
+
+      const femaleHints = /xiaoxiao|tingting|ting-ting|meijia|sinji|sin-ji|yaoyao|huihui|lili|shanshan|xiaoyi|female|woman|女/i;
+      const maleHints = /yunxi|yunjian|yunyang|kangkang|danny|zhiwei|eddy|reed|rocko|sandy|shelley|male|man|男/i;
+
+      const cnOnly = zhVoices.filter(v => /zh[-_]cn|cmn/i.test(v.lang));
+      const pool = cnOnly.length ? cnOnly : zhVoices;
+
+      const targetHint = gender === 'female' ? femaleHints : maleHints;
+      const matched = pool.find(v => targetHint.test(v.name));
+      if (matched) return { voice: matched, exactGender: true };
+
+      if (pool.length >= 2) {
+        return { voice: gender === 'female' ? pool[0] : pool[1], exactGender: false };
+      }
+      return { voice: pool[0], exactGender: false };
+    }
+
+    function setSpeakingVisual(gender, on) {
+      document.querySelectorAll(`.voice-btn.${gender}`).forEach(btn => {
+        btn.classList.toggle('speaking', on);
+      });
+    }
+
+    function updateAudioBadge(mode) {
+      const label = mode === 'HD' ? 'HD MP3' : 'TTS';
+      document.getElementById('audioBadgeFront').textContent = label;
+      document.getElementById('audioBadgeBack').textContent = label;
+    }
+
+    function stopAllAudio() {
+      try {
+        audioEl.pause();
+        audioEl.currentTime = 0;
+      } catch {}
+      if ('speechSynthesis' in window) {
+        try { window.speechSynthesis.cancel(); } catch {}
+      }
+      setSpeakingVisual('female', false);
+      setSpeakingVisual('male', false);
+    }
+
+    function speakWithTTS(text, gender) {
+      if (!('speechSynthesis' in window)) {
+        showToast('Trình duyệt không hỗ trợ đọc tự động');
+        return;
+      }
+      refreshVoices();
+      try { window.speechSynthesis.cancel(); } catch {}
+      const utt = new SpeechSynthesisUtterance(text);
+      utt.lang = 'zh-CN';
+      utt.rate = state.speed;
+      const { voice, exactGender } = pickZhVoice(gender);
+      if (voice) utt.voice = voice;
+      utt.pitch = exactGender ? 1.0 : (gender === 'female' ? 1.08 : 0.84);
+      setSpeakingVisual(gender, true);
+      updateAudioBadge('TTS');
+      utt.onend = () => setSpeakingVisual(gender, false);
+      utt.onerror = () => setSpeakingVisual(gender, false);
+      window.speechSynthesis.speak(utt);
+    }
+
+    function speakCard(card, gender) {
+      if (!card) return;
+      state.preferredGender = gender;
+      saveState();
+      stopAllAudio();
+
+      if (card.audioId) {
+        const src = `audio/${gender}/${card.audioId}.mp3`;
+        updateAudioBadge('HD');
+        setSpeakingVisual(gender, true);
+        audioEl.src = src;
+        audioEl.playbackRate = state.speed;
+
+        const onEnded = () => {
+          setSpeakingVisual(gender, false);
+          audioEl.removeEventListener('ended', onEnded);
+          audioEl.removeEventListener('error', onError);
+        };
+        const onError = () => {
+          audioEl.removeEventListener('ended', onEnded);
+          audioEl.removeEventListener('error', onError);
+          speakWithTTS(card.hanzi, gender);
+        };
+        audioEl.addEventListener('ended', onEnded);
+        audioEl.addEventListener('error', onError);
+
+        const playPromise = audioEl.play();
+        if (playPromise && typeof playPromise.catch === 'function') {
+          playPromise.catch(() => {
+            audioEl.removeEventListener('ended', onEnded);
+            audioEl.removeEventListener('error', onError);
+            speakWithTTS(card.hanzi, gender);
+          });
+        }
+      } else {
+        speakWithTTS(card.hanzi, gender);
+      }
+    }
+
+    function speakExample(card) {
+      if (!card || !card.example) return;
+      stopAllAudio();
+      // Extract Chinese portion before Vietnamese translation in parentheses
+      const zhPart = card.example.split('(')[0].trim() || card.example;
+      speakWithTTS(zhPart, state.preferredGender || 'female');
+    }
+
+    // =========================================================================
+    // 4. Filtering, Sorting & Rendering
+    // =========================================================================
+    function populateGroupSelect() {
+      const sel = document.getElementById('groupSelect');
+      const groups = [...new Set(allCards.map(c => c.group))];
+      const prev = state.group;
+      sel.innerHTML = '';
+
+      const optAll = document.createElement('option');
+      optAll.value = 'ALL';
+      optAll.textContent = `Tất cả bài (${allCards.length} từ)`;
+      sel.appendChild(optAll);
+
+      const optUnlearned = document.createElement('option');
+      optUnlearned.value = 'UNLEARNED';
+      optUnlearned.textContent = 'Chỉ từ chưa thuộc';
+      sel.appendChild(optUnlearned);
+
+      for (const g of groups) {
+        const cnt = allCards.filter(c => c.group === g).length;
+        const opt = document.createElement('option');
+        opt.value = g;
+        opt.textContent = `${g} (${cnt})`;
+        sel.appendChild(opt);
+      }
+
+      sel.value = [...sel.options].some(o => o.value === prev) ? prev : 'ALL';
+      state.group = sel.value;
+    }
+
+    function fisherYatesShuffle(arr) {
+      const copy = [...arr];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function applyFiltersAndSort(resetIdx = true) {
+      const q = document.getElementById('searchInput').value.trim().toLowerCase();
+      let list = allCards.filter(c => {
+        if (state.group === 'UNLEARNED') {
+          if (state.statusMap[c.hanzi] === 'known') return false;
+        } else if (state.group !== 'ALL' && c.group !== state.group) {
+          return false;
+        }
+
+        if (q) {
+          const plainPy = stripTone(c.pinyin);
+          const match =
+            c.hanzi.toLowerCase().includes(q) ||
+            c.pinyin.toLowerCase().includes(q) ||
+            plainPy.includes(q) ||
+            c.meaning.toLowerCase().includes(q);
+          if (!match) return false;
+        }
+        return true;
+      });
+
+      if (state.sort === 'phonetic') {
+        list.sort(comparePhonetic);
+      } else if (state.sort === 'random') {
+        if (randomSeedOrder.length !== allCards.length) {
+          randomSeedOrder = fisherYatesShuffle(allCards.map(c => c.hanzi));
+        }
+        const rank = new Map(randomSeedOrder.map((hz, i) => [hz, i]));
+        list.sort((a, b) => (rank.get(a.hanzi) ?? 0) - (rank.get(b.hanzi) ?? 0));
+      } else if (state.sort === 'unlearned') {
+        list.sort((a, b) => {
+          const sa = state.statusMap[a.hanzi] === 'known' ? 1 : 0;
+          const sb = state.statusMap[b.hanzi] === 'known' ? 1 : 0;
+          return sa - sb || a.id - b.id;
+        });
+      } else {
+        list.sort((a, b) => a.id - b.id);
+      }
+
+      activeDeck = list;
+      if (resetIdx) currentIndex = 0;
+      if (currentIndex >= activeDeck.length) currentIndex = Math.max(0, activeDeck.length - 1);
+      isFlipped = false;
+      renderCard();
+      updateStats();
+    }
+
+    function renderColoredPinyin(card) {
+      const tokens = card._ph ? card._ph.tokens : tokenizePinyin(card.pinyin);
+      const container = document.getElementById('backPinyin');
+      container.innerHTML = '';
+      if (!tokens.length) {
+        container.textContent = card.pinyin;
+        return;
+      }
+      tokens.forEach(tok => {
+        const span = document.createElement('span');
+        span.className = `t${tok.tone}`;
+        span.textContent = tok.text;
+        container.appendChild(span);
+      });
+    }
+
+    function formatStatusBadge(el, hanzi) {
+      const st = state.statusMap[hanzi];
+      el.className = 'pill';
+      if (st === 'known') {
+        el.textContent = '✓ Đã thuộc';
+        el.classList.add('status-known');
+      } else if (st === 'review') {
+        el.textContent = '↻ Cần ôn';
+        el.classList.add('status-review');
+      } else {
+        el.textContent = 'Từ mới';
+      }
+    }
+
+    function renderCard() {
+      const fc = document.getElementById('flashcard');
+      const empty = document.getElementById('emptyState');
+
+      if (!activeDeck.length) {
+        fc.style.display = 'none';
+        empty.style.display = 'flex';
+        document.getElementById('counterText').textContent = '0 / 0';
+        return;
+      }
+
+      fc.style.display = 'block';
+      empty.style.display = 'none';
+      fc.classList.toggle('flipped', isFlipped);
+
+      const card = activeDeck[currentIndex];
+      document.getElementById('frontGroup').textContent = card.group;
+      document.getElementById('backGroup').textContent = card.group;
+      formatStatusBadge(document.getElementById('frontStatus'), card.hanzi);
+      formatStatusBadge(document.getElementById('backStatus'), card.hanzi);
+
+      const phBadge = document.getElementById('frontPhonetic');
+      if (state.sort === 'phonetic' && card._ph) {
+        phBadge.style.display = 'inline-flex';
+        phBadge.textContent = card._ph.label;
+      } else {
+        phBadge.style.display = 'none';
+      }
+
+      // Front body according to front mode
+      const frontBody = document.getElementById('frontBody');
+      frontBody.innerHTML = '';
+      if (state.front === 'hanzi') {
+        const hz = document.createElement('div');
+        hz.className = 'hanzi-main';
+        hz.textContent = card.hanzi;
+        frontBody.appendChild(hz);
+      } else if (state.front === 'listen') {
+        const wrap = document.createElement('div');
+        wrap.className = 'listen-prompt';
+        const ico = document.createElement('div');
+        ico.className = 'listen-icon';
+        ico.textContent = '🎧';
+        const txt = document.createElement('div');
+        txt.textContent = 'Bấm Nữ / Nam để nghe và đoán từ';
+        wrap.appendChild(ico);
+        wrap.appendChild(txt);
+        frontBody.appendChild(wrap);
+      } else {
+        const mn = document.createElement('div');
+        mn.className = 'meaning-front';
+        mn.textContent = card.meaning;
+        frontBody.appendChild(mn);
+      }
+
+      // Back body
+      document.getElementById('backHanzi').textContent = card.hanzi;
+      renderColoredPinyin(card);
+      document.getElementById('backMeaning').textContent = card.meaning;
+
+      const exBox = document.getElementById('exampleBox');
+      const exText = document.getElementById('exampleText');
+      if (card.example) {
+        exBox.style.display = 'flex';
+        exText.innerHTML = '';
+        const match = card.example.match(/^(.*?)\s*\(([^)]+)\)\s*$/);
+        if (match) {
+          const zhSpan = document.createElement('span');
+          zhSpan.textContent = match[1];
+          const viSpan = document.createElement('span');
+          viSpan.className = 'ex-vi';
+          viSpan.textContent = match[2];
+          exText.appendChild(zhSpan);
+          exText.appendChild(viSpan);
+        } else {
+          exText.textContent = card.example;
+        }
+      } else {
+        exBox.style.display = 'none';
+      }
+
+      updateAudioBadge(card.audioId ? 'HD' : 'TTS');
+      document.getElementById('counterText').textContent = `${currentIndex + 1} / ${activeDeck.length}`;
+    }
+
+    function updateStats() {
+      const total = allCards.length;
+      const known = allCards.filter(c => state.statusMap[c.hanzi] === 'known').length;
+      const pct = total ? Math.round((known / total) * 100) : 0;
+      document.getElementById('masteredText').textContent = `Đã thuộc ${known}/${total}`;
+      document.getElementById('progressFill').style.width = `${pct}%`;
+      document.getElementById('deckStats').textContent = `${total} từ vựng • ${pct}% đã thuộc`;
+    }
+
+    function goCard(delta) {
+      if (!activeDeck.length) return;
+      currentIndex = (currentIndex + delta + activeDeck.length) % activeDeck.length;
+      isFlipped = false;
+      renderCard();
+      if (state.autoPlay) {
+        speakCard(activeDeck[currentIndex], state.preferredGender || 'female');
+      }
+    }
+
+    function markCurrent(status) {
+      if (!activeDeck.length) return;
+      const card = activeDeck[currentIndex];
+      state.statusMap[card.hanzi] = status;
+      saveState();
+      updateStats();
+      showToast(status === 'known' ? `Đã thuộc: ${card.hanzi}` : `Đưa vào ôn lại: ${card.hanzi}`);
+      goCard(1);
+    }
+
+    // =========================================================================
+    // 5. Markdown & Google Sheets CSV Parsers + Cloud Sync
+    // =========================================================================
+    function parseMarkdownText(mdText) {
+      const lines = (mdText || '').replace(/^\uFEFF/, '').split(/\r?\n/);
+      let currentGroup = 'Nhập mới';
+      const seen = new Set();
+      const parsed = [];
+
+      for (const raw of lines) {
+        const line = raw.trim();
+        if (line.startsWith('## ')) {
+          currentGroup = line.slice(3).trim();
+          continue;
+        }
+        if (!(line.startsWith('|') && line.endsWith('|'))) continue;
+        const cells = line.slice(1, -1).split('|').map(c => c.trim());
+        if (cells.length < 3) continue;
+        if (cells.every(c => /^[-:\s]*$/.test(c))) continue;
+        if (['Từ (Chữ Hán)', 'Từ', 'Chữ Hán', 'Hanzi'].includes(cells[0])) continue;
+        const hanzi = cells[0];
+        if (!hanzi || seen.has(hanzi)) continue;
+        seen.add(hanzi);
+        parsed.push({
+          id: parsed.length + 1,
+          audioId: null,
+          hanzi,
+          pinyin: cells[1] || '',
+          meaning: cells[2] || '',
+          example: cells[3] || '',
+          group: currentGroup
+        });
+      }
+      return parsed;
+    }
+
+    function parseCsvRows(csvText) {
+      const clean = (csvText || '').replace(/^\uFEFF/, '');
+      const rows = [];
+      let row = [];
+      let cell = '';
+      let inQuotes = false;
+
+      for (let i = 0; i < clean.length; i++) {
+        const ch = clean[i];
+        if (inQuotes) {
+          if (ch === '"') {
+            if (clean[i + 1] === '"') {
+              cell += '"';
+              i++;
+            } else {
+              inQuotes = false;
+            }
+          } else {
+            cell += ch;
+          }
+        } else if (ch === '"') {
+          inQuotes = true;
+        } else if (ch === ',') {
+          row.push(cell.trim());
+          cell = '';
+        } else if (ch === '\r') {
+          if (clean[i + 1] === '\n') i++;
+          row.push(cell.trim());
+          if (row.some(Boolean)) rows.push(row);
+          row = [];
+          cell = '';
+        } else if (ch === '\n') {
+          row.push(cell.trim());
+          if (row.some(Boolean)) rows.push(row);
+          row = [];
+          cell = '';
+        } else {
+          cell += ch;
+        }
+      }
+      row.push(cell.trim());
+      if (row.some(Boolean)) rows.push(row);
+      return rows;
+    }
+
+    function parseCsvText(csvText) {
+      const rows = parseCsvRows(csvText);
+      if (!rows.length) return [];
+
+      let startIdx = 0;
+      let colMap = null;
+      const first = rows[0].map(c => c.toLowerCase());
+      const hasHeader = first.some(c =>
+        c.includes('nhóm') || c.includes('group') ||
+        c.includes('chữ hán') || c.includes('hanzi') ||
+        c.includes('nghĩa') || c.includes('pinyin')
+      );
+
+      if (hasHeader) {
+        startIdx = 1;
+        colMap = {
+          group: first.findIndex(c => c.includes('nhóm') || c.includes('group') || c.includes('bài')),
+          hanzi: first.findIndex(c => c.includes('chữ hán') || c.includes('hanzi') || c === 'từ' || c.startsWith('từ ')),
+          pinyin: first.findIndex(c => c.includes('pinyin') || c.includes('phiên âm')),
+          meaning: first.findIndex(c => c.includes('nghĩa') || c.includes('meaning') || c.includes('việt')),
+          example: first.findIndex(c => c.includes('ví dụ') || c.includes('example'))
+        };
+      }
+
+      const seen = new Set();
+      const parsed = [];
+      for (let i = startIdx; i < rows.length; i++) {
+        const r = rows[i];
+        let group = 'Google Sheets';
+        let hanzi = '';
+        let pinyin = '';
+        let meaning = '';
+        let example = '';
+
+        if (colMap && colMap.hanzi >= 0) {
+          group = (colMap.group >= 0 ? r[colMap.group] : '') || 'Google Sheets';
+          hanzi = r[colMap.hanzi] || '';
+          pinyin = colMap.pinyin >= 0 ? (r[colMap.pinyin] || '') : '';
+          meaning = colMap.meaning >= 0 ? (r[colMap.meaning] || '') : '';
+          example = colMap.example >= 0 ? (r[colMap.example] || '') : '';
+        } else if (r.length >= 5) {
+          [group, hanzi, pinyin, meaning, example] = r;
+          group = group || 'Google Sheets';
+        } else {
+          [hanzi, pinyin, meaning, example] = r;
+        }
+
+        hanzi = (hanzi || '').trim();
+        if (!hanzi || seen.has(hanzi)) continue;
+        seen.add(hanzi);
+        parsed.push({
+          id: parsed.length + 1,
+          audioId: null,
+          hanzi,
+          pinyin: (pinyin || '').trim(),
+          meaning: (meaning || '').trim(),
+          example: (example || '').trim(),
+          group: group.trim()
+        });
+      }
+      return parsed;
+    }
+
+    function parseSyncedPayload(rawText) {
+      const text = (rawText || '').replace(/^\uFEFF/, '').trim();
+      if (!text) return { cards: [], kind: '' };
+
+      if (text.startsWith('{')) {
+        try {
+          const obj = JSON.parse(text);
+          if (typeof obj.markdown === 'string') {
+            return { cards: parseMarkdownText(obj.markdown), kind: 'Google Drive (.md)' };
+          }
+          if (Array.isArray(obj.cards)) {
+            return { cards: obj.cards, kind: 'Google Drive (JSON)' };
+          }
+        } catch {}
+      }
+
+      const lines = text.split(/\r?\n/);
+      const pipeRows = lines.filter(l => {
+        const t = l.trim();
+        return t.startsWith('|') && t.endsWith('|');
+      }).length;
+
+      if (pipeRows >= 2) {
+        return { cards: parseMarkdownText(text), kind: 'Google Drive (.md)' };
+      }
+
+      return { cards: parseCsvText(text), kind: 'Google Sheets (CSV)' };
+    }
+
+    function exportCurrentToMarkdown() {
+      const grouped = new Map();
+      for (const c of allCards) {
+        if (!grouped.has(c.group)) grouped.set(c.group, []);
+        grouped.get(c.group).push(c);
+      }
+      const out = ['# Kho Từ Vựng Flashcard Tiếng Trung', ''];
+      for (const [grp, list] of grouped.entries()) {
+        out.push(`## ${grp}`, '');
+        out.push('| Từ (Chữ Hán) | Phiên âm (Pinyin) | Nghĩa tiếng Việt | Ví dụ |');
+        out.push('|---|---|---|---|');
+        for (const c of list) {
+          const esc = s => String(s || '').replace(/\|/g, '/').replace(/\r?\n/g, ' ');
+          out.push(`| ${esc(c.hanzi)} | ${esc(c.pinyin)} | ${esc(c.meaning)} | ${esc(c.example)} |`);
+        }
+        out.push('');
+      }
+      const blob = new Blob([out.join('\n')], { type: 'text/markdown;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'tu_vung_tieng_trung.md';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      showToast('Đã xuất file tu_vung_tieng_trung.md');
+    }
+
+    // =========================================================================
+    // 6. UI Bindings & Gestures
+    // =========================================================================
+    let toastTimer = null;
+    function showToast(msg) {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => el.classList.remove('show'), 1900);
+    }
+
+    function syncControlUI() {
+      document.documentElement.setAttribute('data-theme', state.theme);
+      document.getElementById('themeBtn').textContent = state.theme === 'dark' ? '🌙' : '☀️';
+
+      document.querySelectorAll('[data-sort]').forEach(b => {
+        b.classList.toggle('active', b.dataset.sort === state.sort);
+      });
+      document.getElementById('reshuffleBtn').style.display = state.sort === 'random' ? 'inline-flex' : 'none';
+
+      document.querySelectorAll('[data-front]').forEach(b => {
+        b.classList.toggle('active', b.dataset.front === state.front);
+      });
+
+      document.querySelectorAll('[data-speed]').forEach(b => {
+        b.classList.toggle('active', Number(b.dataset.speed) === Number(state.speed));
+      });
+
+      const autoBtn = document.getElementById('autoPlayBtn');
+      autoBtn.classList.toggle('active', state.autoPlay);
+      autoBtn.textContent = state.autoPlay ? '🔊 Tự đọc: Bật' : '🔇 Tự đọc: Tắt';
+    }
+
+    document.getElementById('themeBtn').addEventListener('click', () => {
+      state.theme = state.theme === 'dark' ? 'light' : 'dark';
+      saveState();
+      syncControlUI();
+    });
+
+    document.querySelectorAll('[data-sort]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        state.sort = btn.dataset.sort;
+        if (state.sort === 'random' && !randomSeedOrder.length) {
+          randomSeedOrder = fisherYatesShuffle(allCards.map(c => c.hanzi));
+        }
+        saveState();
+        syncControlUI();
+        applyFiltersAndSort(true);
+      });
+    });
+
+    document.getElementById('reshuffleBtn').addEventListener('click', () => {
+      randomSeedOrder = fisherYatesShuffle(allCards.map(c => c.hanzi));
+      applyFiltersAndSort(true);
+      showToast('Đã trộn ngẫu nhiên lại bộ thẻ');
+    });
+
+    document.querySelectorAll('[data-front]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        state.front = btn.dataset.front;
+        saveState();
+        syncControlUI();
+        renderCard();
+      });
+    });
+
+    document.getElementById('groupSelect').addEventListener('change', (e) => {
+      state.group = e.target.value;
+      saveState();
+      applyFiltersAndSort(true);
+    });
+
+    document.getElementById('searchInput').addEventListener('input', () => {
+      applyFiltersAndSort(true);
+    });
+
+    document.getElementById('flashcard').addEventListener('click', () => {
+      if (!activeDeck.length) return;
+      isFlipped = !isFlipped;
+      document.getElementById('flashcard').classList.toggle('flipped', isFlipped);
+    });
+
+    document.querySelectorAll('[data-speak]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (activeDeck.length) speakCard(activeDeck[currentIndex], btn.dataset.speak);
+      });
+    });
+
+    document.getElementById('exPlayBtn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (activeDeck.length) speakExample(activeDeck[currentIndex]);
+    });
+
+    document.getElementById('prevBtn').addEventListener('click', () => goCard(-1));
+    document.getElementById('nextBtn').addEventListener('click', () => goCard(1));
+    document.getElementById('knownBtn').addEventListener('click', () => markCurrent('known'));
+    document.getElementById('reviewBtn').addEventListener('click', () => markCurrent('review'));
+
+    document.querySelectorAll('[data-speed]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        state.speed = Number(btn.dataset.speed);
+        saveState();
+        syncControlUI();
+      });
+    });
+
+    document.getElementById('autoPlayBtn').addEventListener('click', () => {
+      state.autoPlay = !state.autoPlay;
+      saveState();
+      syncControlUI();
+      if (state.autoPlay && activeDeck.length) {
+        speakCard(activeDeck[currentIndex], state.preferredGender || 'female');
+      }
+    });
+
+    // Touch swipe navigation on card
+    let touchStartX = 0;
+    let touchStartY = 0;
+    const stageEl = document.getElementById('stage');
+    stageEl.addEventListener('touchstart', (e) => {
+      touchStartX = e.changedTouches[0].clientX;
+      touchStartY = e.changedTouches[0].clientY;
+    }, { passive: true });
+    stageEl.addEventListener('touchend', (e) => {
+      const dx = e.changedTouches[0].clientX - touchStartX;
+      const dy = e.changedTouches[0].clientY - touchStartY;
+      if (Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy) * 1.4) {
+        goCard(dx < 0 ? 1 : -1);
+      }
+    }, { passive: true });
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName)) return;
+      if (e.code === 'Space') {
+        e.preventDefault();
+        if (activeDeck.length) {
+          isFlipped = !isFlipped;
+          document.getElementById('flashcard').classList.toggle('flipped', isFlipped);
+        }
+      } else if (e.key === 'ArrowRight') {
+        goCard(1);
+      } else if (e.key === 'ArrowLeft') {
+        goCard(-1);
+      } else if (e.key === '1') {
+        if (activeDeck.length) speakCard(activeDeck[currentIndex], 'female');
+      } else if (e.key === '2') {
+        if (activeDeck.length) speakCard(activeDeck[currentIndex], 'male');
+      } else if (e.key === 'k' || e.key === 'K') {
+        markCurrent('known');
+      } else if (e.key === 'u' || e.key === 'U') {
+        markCurrent('review');
+      }
+    });
+
+    // Modal, Cloud Sync & Live Import/Export
+    const modalBackdrop = document.getElementById('modalBackdrop');
+    const syncUrlInput = document.getElementById('syncUrlInput');
+    const autoSyncCheck = document.getElementById('autoSyncCheck');
+    const saveSyncBtn = document.getElementById('saveSyncBtn');
+    const syncStatusText = document.getElementById('syncStatusText');
+    const quickSyncBtn = document.getElementById('quickSyncBtn');
+
+    function renderSyncStatus(errMsg = '') {
+      syncUrlInput.value = state.syncUrl || '';
+      autoSyncCheck.checked = Boolean(state.autoSync);
+      if (errMsg) {
+        syncStatusText.className = 'sync-status err';
+        syncStatusText.textContent = errMsg;
+        return;
+      }
+      syncStatusText.className = 'sync-status';
+      if (state.lastSyncAt) {
+        const dt = new Date(state.lastSyncAt);
+        const timeStr = isNaN(dt.getTime()) ? state.lastSyncAt : dt.toLocaleString('vi-VN');
+        syncStatusText.textContent = `Đã đồng bộ lần cuối: ${timeStr} (${state.lastSyncKind || 'Cloud'})`;
+      } else if (state.syncUrl) {
+        syncStatusText.textContent = 'Đã lưu link. Bấm nút bên trên để đồng bộ.';
+      } else {
+        syncStatusText.textContent = 'Chưa cấu hình link đồng bộ.';
+      }
+    }
+
+    async function syncFromCloud(silent = false) {
+      const rawUrl = (state.syncUrl || '').trim();
+      if (!rawUrl) {
+        if (!silent) {
+          modalBackdrop.classList.add('open');
+          setTimeout(() => syncUrlInput.focus(), 80);
+        }
+        return;
+      }
+      if (!/^https?:\/\//i.test(rawUrl)) {
+        const msg = 'Link không hợp lệ (cần bắt đầu bằng https://)';
+        renderSyncStatus(msg);
+        if (!silent) showToast(msg);
+        return;
+      }
+
+      quickSyncBtn.classList.add('spinning');
+      saveSyncBtn.disabled = true;
+      saveSyncBtn.textContent = '⏳ Đang đồng bộ...';
+
+      try {
+        const sep = rawUrl.includes('?') ? '&' : '?';
+        const fetchUrl = `${rawUrl}${sep}_t=${Date.now()}`;
+        const res = await fetch(fetchUrl, { redirect: 'follow', cache: 'no-store' });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const text = await res.text();
+
+        const { cards, kind } = parseSyncedPayload(text);
+        if (!cards.length) {
+          if (/<html|accounts\.google\.com/i.test(text)) {
+            throw new Error('Không đọc được dữ liệu — hãy kiểm tra quyền chia sẻ Công khai (Anyone)');
+          }
+          throw new Error('Không tìm thấy từ vựng hợp lệ trong dữ liệu trả về');
+        }
+
+        const prevCount = allCards.length;
+        state.customDeck = cards;
+        state.lastSyncAt = new Date().toISOString();
+        state.lastSyncKind = kind;
+        saveState();
+        initCardsFromSource(cards);
+        renderSyncStatus();
+
+        const diff = cards.length - prevCount;
+        const diffMsg = diff > 0 ? ` (+${diff} từ mới)` : '';
+        if (!silent || diff !== 0) {
+          showToast(`Đồng bộ ${kind}: ${cards.length} từ${diffMsg}`);
+        }
+      } catch (err) {
+        const msg = `Lỗi đồng bộ: ${err.message || err}`;
+        renderSyncStatus(msg);
+        if (!silent) showToast(msg);
+      } finally {
+        quickSyncBtn.classList.remove('spinning');
+        saveSyncBtn.disabled = false;
+        saveSyncBtn.textContent = '🔄 Lưu link & Đồng bộ ngay';
+      }
+    }
+
+    document.getElementById('menuBtn').addEventListener('click', () => {
+      renderSyncStatus();
+      modalBackdrop.classList.add('open');
+    });
+    document.getElementById('closeModalBtn').addEventListener('click', () => modalBackdrop.classList.remove('open'));
+    modalBackdrop.addEventListener('click', (e) => {
+      if (e.target === modalBackdrop) modalBackdrop.classList.remove('open');
+    });
+
+    quickSyncBtn.addEventListener('click', () => {
+      if (state.syncUrl) {
+        syncFromCloud(false);
+      } else {
+        renderSyncStatus();
+        modalBackdrop.classList.add('open');
+        setTimeout(() => syncUrlInput.focus(), 80);
+      }
+    });
+
+    saveSyncBtn.addEventListener('click', async () => {
+      state.syncUrl = syncUrlInput.value.trim();
+      state.autoSync = autoSyncCheck.checked;
+      saveState();
+      await syncFromCloud(false);
+    });
+
+    autoSyncCheck.addEventListener('change', () => {
+      state.autoSync = autoSyncCheck.checked;
+      saveState();
+    });
+
+    document.getElementById('importMdBtn').addEventListener('click', () => {
+      document.getElementById('mdFileInput').click();
+    });
+
+    document.getElementById('mdFileInput').addEventListener('change', (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        const { cards, kind } = parseSyncedPayload(String(reader.result || ''));
+        if (!cards.length) {
+          showToast('Không đọc được bảng từ vựng từ file này');
+          return;
+        }
+        state.customDeck = cards;
+        saveState();
+        initCardsFromSource(cards);
+        modalBackdrop.classList.remove('open');
+        showToast(`Đã nạp ${cards.length} từ (${kind || file.name})`);
+      };
+      reader.readAsText(file, 'utf-8');
+      e.target.value = '';
+    });
+
+    document.getElementById('exportMdBtn').addEventListener('click', () => {
+      exportCurrentToMarkdown();
+    });
+
+    document.getElementById('restoreDeckBtn').addEventListener('click', () => {
+      state.customDeck = null;
+      state.lastSyncAt = null;
+      state.lastSyncKind = '';
+      saveState();
+      initCardsFromSource(INITIAL_VOCAB);
+      renderSyncStatus();
+      modalBackdrop.classList.remove('open');
+      showToast('Đã khôi phục bộ từ gốc');
+    });
+
+    document.getElementById('resetProgressBtn').addEventListener('click', () => {
+      state.statusMap = {};
+      saveState();
+      renderCard();
+      updateStats();
+      modalBackdrop.classList.remove('open');
+      showToast('Đã đặt lại toàn bộ tiến độ');
+    });
+
+    // Register Service Worker on HTTPS / localhost
+    if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+      navigator.serviceWorker.register('./sw.js').catch(() => {});
+    }
+
+    // Boot
+    syncControlUI();
+    renderSyncStatus();
+    initCardsFromSource(Array.isArray(state.customDeck) && state.customDeck.length ? state.customDeck : INITIAL_VOCAB);
+    if (state.syncUrl && state.autoSync && navigator.onLine) {
+      syncFromCloud(true);
+    }
+  </script>
+</body>
+</html>
