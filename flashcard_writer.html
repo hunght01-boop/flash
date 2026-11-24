@@ -1,0 +1,1685 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flashcard & Luyện Viết Chữ Hán (Handwriting Flashcards)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
+  <!-- Pinyin tự động -->
+  <script src="https://unpkg.com/pinyin-pro@3.29.5/dist/index.js"></script>
+  <!-- HanziWriter để xem thứ tự nét viết chuẩn -->
+  <script src="https://unpkg.com/hanzi-writer@3.5/dist/hanzi-writer.min.js"></script>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: rgba(30, 41, 59, 0.78);
+      --card-border: rgba(255, 255, 255, 0.12);
+      --accent: #38bdf8;
+      --accent-indigo: #818cf8;
+      --accent-green: #34d399;
+      --accent-amber: #fbbf24;
+      --accent-rose: #f43f5e;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: radial-gradient(circle at 50% 0%, #1e293b 0%, #0f172a 100%);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px 16px 48px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 980px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 4px;
+    }
+
+    header h1 {
+      font-size: 26px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #38bdf8, #818cf8, #f472b6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 6px;
+    }
+
+    header p {
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 22px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+    }
+
+    /* Top Control Bar */
+    .mode-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 18px;
+      background: rgba(15, 23, 42, 0.65);
+      border-radius: 16px;
+      border: 1px solid var(--card-border);
+    }
+
+    .mode-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .mode-group label {
+      font-size: 13px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    select, input[type="text"], textarea {
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 8px 12px;
+      color: var(--text-main);
+      font-size: 13px;
+      font-family: inherit;
+      outline: none;
+    }
+
+    select:focus, input[type="text"]:focus, textarea:focus {
+      border-color: var(--accent);
+    }
+
+    .pill-check {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.2s;
+    }
+
+    .pill-check:hover {
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    .pill-check input {
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    /* Main Flashcard Layout */
+    .flashcard-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.15fr;
+      gap: 20px;
+      align-items: stretch;
+    }
+
+    @media (max-width: 820px) {
+      .flashcard-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Left Panel: Question Prompt & Answer Reveal */
+    .prompt-panel {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 16px;
+      background: rgba(15, 23, 42, 0.5);
+      border: 1px solid var(--card-border);
+      border-radius: 18px;
+      padding: 20px;
+      position: relative;
+    }
+
+    .card-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      background: rgba(56, 189, 248, 0.12);
+      color: var(--accent);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+    }
+
+    .badge.random-active {
+      background: rgba(129, 140, 248, 0.15);
+      color: #a5b4fc;
+      border-color: rgba(129, 140, 248, 0.3);
+    }
+
+    .prompt-box {
+      text-align: center;
+      padding: 18px 12px;
+      border-radius: 14px;
+      background: rgba(30, 41, 59, 0.6);
+      border: 1px dashed rgba(255, 255, 255, 0.15);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 150px;
+      gap: 10px;
+    }
+
+    .prompt-label {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text-muted);
+    }
+
+    .prompt-meaning {
+      font-size: 24px;
+      font-weight: 700;
+      color: #fde68a;
+      line-height: 1.35;
+    }
+
+    .prompt-pinyin-hint {
+      font-size: 18px;
+      color: #93c5fd;
+      font-weight: 600;
+      min-height: 24px;
+    }
+
+    .audio-btn-group {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 4px;
+    }
+
+    /* Answer Reveal Box */
+    .answer-box {
+      border-radius: 14px;
+      padding: 16px;
+      background: rgba(16, 185, 129, 0.08);
+      border: 1px solid rgba(52, 211, 153, 0.3);
+      display: none;
+      flex-direction: column;
+      gap: 12px;
+      animation: fadeIn 0.25s ease;
+    }
+
+    .answer-box.visible {
+      display: flex;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .answer-main {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding-bottom: 12px;
+    }
+
+    .answer-hanzi {
+      font-family: 'Noto Sans SC', sans-serif;
+      font-size: 46px;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: 4px;
+      line-height: 1.1;
+    }
+
+    .answer-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .answer-pinyin {
+      font-size: 20px;
+      font-weight: 600;
+      color: #38bdf8;
+    }
+
+    .answer-vi {
+      font-size: 16px;
+      color: #e2e8f0;
+      font-weight: 500;
+    }
+
+    /* Stroke Order Container */
+    .stroke-order-box {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      padding: 10px;
+      background: rgba(15, 23, 42, 0.7);
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .stroke-order-box.visible {
+      display: flex;
+    }
+
+    .stroke-chars-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .stroke-target {
+      width: 90px;
+      height: 90px;
+      background: #0f172a;
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      border-radius: 10px;
+    }
+
+    /* Examples List */
+    .examples-section {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .examples-title {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: #94a3b8;
+      letter-spacing: 0.5px;
+    }
+
+    .example-item {
+      background: rgba(15, 23, 42, 0.65);
+      border-left: 3px solid var(--accent);
+      padding: 10px 12px;
+      border-radius: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .example-text-group {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .example-cn {
+      font-family: 'Noto Sans SC', sans-serif;
+      font-size: 17px;
+      font-weight: 600;
+      color: #f8fafc;
+    }
+
+    .example-py {
+      font-size: 13px;
+      color: #93c5fd;
+    }
+
+    .example-vi {
+      font-size: 13px;
+      color: #cbd5e1;
+      font-style: italic;
+    }
+
+    /* Right Panel: Handwriting Canvas */
+    .canvas-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      background: rgba(15, 23, 42, 0.5);
+      border: 1px solid var(--card-border);
+      border-radius: 18px;
+      padding: 20px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .canvas-toolbar {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .canvas-wrapper {
+      position: relative;
+      width: 100%;
+      height: 290px;
+      background: #0b1120;
+      border: 2px solid rgba(56, 189, 248, 0.35);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.6);
+      touch-action: none;
+    }
+
+    /* Chữ Hán đối chiếu nằm dưới nét vẽ */
+    .canvas-guide-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      pointer-events: none;
+      user-select: none;
+      font-family: 'Noto Sans SC', sans-serif;
+      font-weight: 500;
+      color: transparent;
+      transition: color 0.25s ease;
+      z-index: 1;
+      padding: 0 10px;
+    }
+
+    /* Chế độ đồ theo nét mờ */
+    .canvas-guide-overlay.trace-mode {
+      color: rgba(148, 163, 184, 0.18);
+    }
+
+    /* Chế độ hiện đáp án để so sánh với nét vẽ tay */
+    .canvas-guide-overlay.compare-mode {
+      color: rgba(52, 211, 153, 0.32);
+    }
+
+    #drawCanvas {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      cursor: crosshair;
+      z-index: 2;
+      display: block;
+    }
+
+    /* Buttons */
+    button {
+      cursor: pointer;
+      border: none;
+      outline: none;
+      font-family: inherit;
+      transition: all 0.2s ease;
+    }
+
+    .btn-primary {
+      padding: 11px 22px;
+      font-size: 15px;
+      font-weight: 600;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #0284c7, #2563eb);
+      color: white;
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(37, 99, 235, 0.5);
+    }
+
+    .btn-reveal {
+      padding: 12px 24px;
+      font-size: 15px;
+      font-weight: 700;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #059669, #10b981);
+      color: white;
+      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+      width: 100%;
+    }
+
+    .btn-reveal:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(16, 185, 129, 0.5);
+    }
+
+    .btn-secondary {
+      padding: 8px 15px;
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-main);
+      border: 1px solid var(--card-border);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .btn-warn {
+      background: rgba(244, 63, 94, 0.15);
+      color: #fda4af;
+      border: 1px solid rgba(244, 63, 94, 0.3);
+    }
+
+    .btn-warn:hover {
+      background: rgba(244, 63, 94, 0.25);
+    }
+
+    .btn-success {
+      background: rgba(52, 211, 153, 0.15);
+      color: #6ee7b7;
+      border: 1px solid rgba(52, 211, 153, 0.3);
+    }
+
+    .btn-success:hover {
+      background: rgba(52, 211, 153, 0.25);
+    }
+
+    .nav-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      margin-top: 4px;
+      flex-wrap: wrap;
+    }
+
+    /* Quick Add Form */
+    .quick-add-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.2fr 2fr auto;
+      gap: 10px;
+      align-items: end;
+      margin-bottom: 16px;
+    }
+
+    @media (max-width: 780px) {
+      .quick-add-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .field-col {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .field-col label {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .raw-textarea {
+      width: 100%;
+      height: 190px;
+      font-family: monospace;
+      line-height: 1.55;
+      resize: vertical;
+    }
+
+    .shortcut-tip {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-align: center;
+    }
+
+    kbd {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 5px;
+      padding: 2px 6px;
+      font-size: 11px;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: linear-gradient(135deg, #059669, #10b981);
+      color: white;
+      padding: 12px 22px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      transform: translateY(120px);
+      opacity: 0;
+      transition: all 0.3s ease;
+      z-index: 9999;
+      pointer-events: none;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  
+    /* App Switcher Bar */
+    .app-nav {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      background: rgba(15, 23, 42, 0.72);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 14px;
+      padding: 4px;
+      width: 100%;
+    }
+    .app-nav-link {
+      min-height: 38px;
+      padding: 6px 10px;
+      border-radius: 10px;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 700;
+      color: #94a3b8;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: background 0.15s ease, color 0.15s ease;
+      white-space: nowrap;
+    }
+    .app-nav-link:hover {
+      background: rgba(255, 255, 255, 0.06);
+      color: #f8fafc;
+    }
+    .app-nav-link.active {
+      background: rgba(56, 189, 248, 0.16);
+      color: #38bdf8;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <nav class="app-nav" aria-label="Chuyển đổi công cụ học">
+      <a class="app-nav-link" href="index.html">🃏 Flashcard</a>
+      <a class="app-nav-link active" href="flashcard_writer.html" aria-current="page">✍️ Luyện viết</a>
+      <a class="app-nav-link" href="dictation_player.html">🎧 Nghe chép</a>
+    </nav>
+
+    <header>
+      <h1>✍️ Flashcard Nghe & Vẽ Tay Chữ Hán</h1>
+      <p>Nghe tiếng Trung hoặc xem nghĩa tiếng Việt → Viết tay lên ô Mễ Tự Cách → Lật thẻ đối chiếu chữ Hán & câu ví dụ</p>
+    </header>
+
+    <!-- Thanh cấu hình chế độ hỏi & ngẫu nhiên -->
+    <div class="mode-bar">
+      <div class="mode-group">
+        <label for="promptMode">🎯 Chế độ mặt trước (Câu hỏi):</label>
+        <select id="promptMode" onchange="onModeChange()">
+          <option value="vi_to_zh">🇻🇳 Đọc/Hiện Tiếng Việt ➔ Vẽ chữ Hán</option>
+          <option value="zh_audio_only">🔊 Chỉ nghe Tiếng Trung (Ẩn nghĩa) ➔ Vẽ chữ Hán</option>
+          <option value="zh_and_vi" selected>🔊+🇻🇳 Nghe Tiếng Trung + Hiện nghĩa Việt ➔ Vẽ chữ Hán</option>
+        </select>
+      </div>
+
+      <div class="mode-group">
+        <label class="pill-check" title="Các thẻ sẽ xuất hiện ngẫu nhiên, ưu tiên từ chưa thuộc">
+          <input type="checkbox" id="randomToggle" checked onchange="updateModeBadge()">
+          <span>🎲 Xuất hiện ngẫu hứng (Random)</span>
+        </label>
+        <label class="pill-check" title="Tự động đọc âm khi chuyển sang thẻ mới">
+          <input type="checkbox" id="autoSpeakToggle" checked>
+          <span>🔊 Tự động phát âm</span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Khu vực Flashcard + Bảng Vẽ Tay -->
+    <div class="card">
+      <div class="flashcard-grid">
+
+        <!-- CỘT TRÁI: ĐỀ BÀI & ĐÁP ÁN -->
+        <div class="prompt-panel">
+          <div>
+            <div class="card-header-row">
+              <span id="cardCounter">Thẻ 1 / 20 • Đã thuộc: 0</span>
+              <span id="modeBadge" class="badge random-active">🎲 Ngẫu hứng</span>
+            </div>
+
+            <!-- Hộp câu hỏi -->
+            <div class="prompt-box" style="margin-top: 12px;">
+              <div class="prompt-label" id="promptInstruction">Hãy nghe & viết chữ Hán tương ứng vào bảng bên phải</div>
+              <div class="prompt-meaning" id="promptMeaning">...</div>
+              <div class="prompt-pinyin-hint" id="promptPinyinHint"></div>
+
+              <div class="audio-btn-group">
+                <button class="btn-primary" onclick="speakCurrentChinese()">🔊 Nghe Tiếng Trung</button>
+                <button class="btn-secondary" onclick="speakCurrentVietnamese()">🇻🇳 Đọc nghĩa Việt</button>
+                <button class="btn-secondary" onclick="togglePinyinHint()">💡 Gợi ý Pinyin</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Nút Hiện Đáp Án -->
+          <button class="btn-reveal" id="btnReveal" onclick="toggleAnswer()">
+            👁 Hiện Chữ Hán & Ví Dụ (Space)
+          </button>
+
+          <!-- Hộp Đáp Án & Ví Dụ (Hiện ra sau khi bấm) -->
+          <div class="answer-box" id="answerBox">
+            <div class="answer-main">
+              <div style="display: flex; align-items: center; gap: 16px;">
+                <div class="answer-hanzi" id="answerHanzi">害怕</div>
+                <div class="answer-meta">
+                  <div class="answer-pinyin" id="answerPinyin">hài pà</div>
+                  <div class="answer-vi" id="answerVi">sợ hãi, lo sợ</div>
+                </div>
+              </div>
+              <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                <button class="btn-secondary" onclick="speakCurrentChinese()" title="Nghe lại từ này">🔊</button>
+                <button class="btn-secondary" onclick="showStrokeOrder()" title="Xem hướng dẫn thứ tự nét viết">🎞 Thứ tự nét</button>
+              </div>
+            </div>
+
+            <!-- Ô hướng dẫn thứ tự nét viết HanziWriter -->
+            <div class="stroke-order-box" id="strokeOrderBox">
+              <div style="font-size: 12px; color: #93c5fd;">✨ Thứ tự nét viết chuẩn (Bấm vào chữ để xem lại):</div>
+              <div class="stroke-chars-row" id="strokeCharsRow"></div>
+            </div>
+
+            <!-- Danh sách câu ví dụ -->
+            <div class="examples-section" id="examplesSection">
+              <div class="examples-title">📌 Ví dụ trong ngữ cảnh:</div>
+              <div id="examplesList" style="display: flex; flex-direction: column; gap: 8px;"></div>
+            </div>
+          </div>
+
+          <!-- Điều hướng thẻ -->
+          <div class="nav-controls">
+            <button class="btn-secondary" onclick="prevCard()">⏮ Trước</button>
+            <button class="btn-secondary btn-warn" onclick="markHardAndNext()" title="Đánh dấu chưa nhớ để lát nữa xuất hiện lại">🔁 Chưa nhớ (Ôn lại)</button>
+            <button class="btn-secondary btn-success" onclick="markMasteredAndNext()" title="Đánh dấu đã thuộc từ này">✅ Đã thuộc</button>
+            <button class="btn-primary" style="padding: 9px 18px; font-size: 14px;" onclick="nextCard()">Tiếp theo 🎲⏭</button>
+          </div>
+        </div>
+
+        <!-- CỘT PHẢI: BẢNG VẼ TAY CHỮ HÁN -->
+        <div class="canvas-panel">
+          <div class="canvas-toolbar">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 14px; font-weight: 600; color: #cbd5e1;">🖌 Bảng viết tay (<span id="charCountLabel">2</span> chữ)</span>
+              <label class="pill-check" style="font-size: 12px; padding: 4px 10px;" title="Hiện chữ Hán mờ bên dưới để tập đồ theo nét">
+                <input type="checkbox" id="traceToggle" onchange="updateCanvasOverlay()">
+                <span>Hiện chữ mờ (Tập đồ)</span>
+              </label>
+            </div>
+
+            <div style="display: flex; gap: 6px; align-items: center;">
+              <select id="penSize" style="padding: 5px 8px; font-size: 12px;" title="Độ dày nét bút">
+                <option value="6">Nét mảnh</option>
+                <option value="10" selected>Nét vừa</option>
+                <option value="15">Nét đậm (Bút lông)</option>
+              </select>
+              <button class="btn-secondary" style="padding: 6px 12px; font-size: 12px;" onclick="undoStroke()" title="Hoàn tác nét vừa vẽ (Ctrl+Z)">↩ Hoàn tác</button>
+              <button class="btn-secondary btn-warn" style="padding: 6px 12px; font-size: 12px;" onclick="clearCanvas()" title="Xoá sạch bảng vẽ (Phím C)">🗑 Xoá bảng</button>
+            </div>
+          </div>
+
+          <!-- Khung Canvas Mễ Tự Cách -->
+          <div class="canvas-wrapper" id="canvasWrapper">
+            <div class="canvas-guide-overlay" id="canvasGuideOverlay"></div>
+            <canvas id="drawCanvas"></canvas>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; width: 100%; align-items: center; font-size: 12px; color: var(--text-muted);">
+            <span>💡 Mẹo: Khi bấm <b>"Hiện Chữ Hán"</b>, chữ chuẩn màu xanh sẽ hiện đè dưới nét vẽ để bạn so sánh.</span>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="shortcut-tip" style="margin-top: 14px;">
+        Phím tắt: <kbd>Space</kbd> Hiện/Ẩn đáp án • <kbd>→</kbd> hoặc <kbd>Enter</kbd> Thẻ ngẫu nhiên tiếp theo • <kbd>R</kbd> Nghe lại • <kbd>C</kbd> Xoá bảng vẽ • <kbd>Ctrl+Z</kbd> Hoàn tác nét
+      </div>
+    </div>
+
+    <!-- Khu vực Quản lý Kho Từ Vựng & Nạp/Lưu File Text -->
+    <div class="card">
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 14px;">
+        <div>
+          <h3 style="font-size: 16px; color: #e2e8f0;">📚 Kho Từ Vựng & Lưu Trữ File Text (<span id="totalVocabCount">0</span> từ)</h3>
+          <p style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">
+            Thêm từ mới hàng ngày vào dưới đây và bấm <b>"Lưu về file .txt"</b> hoặc mở trực tiếp file <code>tu_vung_flashcard.txt</code>
+          </p>
+        </div>
+
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <input type="file" id="fileInput" accept=".txt,.md" style="display: none;" onchange="handleFileUpload(event)">
+          <button class="btn-secondary" style="color: #38bdf8; border-color: rgba(56, 189, 248, 0.4);" onclick="document.getElementById('fileInput').click()">
+            📂 Mở file .txt (tu_vung_flashcard.txt)
+          </button>
+          <button class="btn-secondary" style="color: #34d399; border-color: rgba(52, 211, 153, 0.4);" onclick="exportToTextFile()">
+            💾 Lưu / Tải về file .txt
+          </button>
+          <button class="btn-secondary" onclick="resetToDefaultSample()">
+            🔄 Khôi phục bộ từ mẫu
+          </button>
+        </div>
+      </div>
+
+      <!-- Thanh thêm nhanh 1 từ mới -->
+      <div class="quick-add-grid">
+        <div class="field-col">
+          <label>🇨🇳 Chữ Hán (Bắt buộc):</label>
+          <input type="text" id="newHanzi" placeholder="VD: 冷静">
+        </div>
+        <div class="field-col">
+          <label>🇻🇳 Nghĩa tiếng Việt:</label>
+          <input type="text" id="newMeaning" placeholder="VD: bình tĩnh, điềm tĩnh">
+        </div>
+        <div class="field-col">
+          <label>📌 Câu ví dụ (Chữ Hán - Nghĩa Việt, không bắt buộc):</label>
+          <input type="text" id="newExample" placeholder="VD: 请你先冷静下来。 - Xin bạn hãy bình tĩnh lại trước đã.">
+        </div>
+        <button class="btn-primary" style="padding: 9px 18px; font-size: 13px; height: 36px;" onclick="quickAddWord()">
+          ➕ Thêm từ này
+        </button>
+      </div>
+
+      <!-- Ô chỉnh sửa trực tiếp toàn bộ nội dung file text -->
+      <textarea id="rawVocabInput" class="raw-textarea" placeholder="Nhập danh sách từ vựng..."></textarea>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; flex-wrap: wrap; gap: 10px;">
+        <span style="font-size: 12px; color: var(--text-muted);" id="storageStatus">
+          ✅ Tự động lưu trong trình duyệt Chrome (Mở lại trang vẫn giữ nguyên từ đã thêm)
+        </span>
+        <button class="btn-primary" style="padding: 8px 20px; font-size: 13px;" onclick="parseAndApplyVocab(true)">
+          📥 Cập nhật kho từ từ ô văn bản
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script>
+    // Kho từ vựng mặc định trích từ bài học của bạn
+    const DEFAULT_VOCAB_TEXT = `# Cú pháp: Chữ Hán | Nghĩa tiếng Việt
+# Dòng ví dụ bắt đầu bằng dấu "-" (Câu chữ Hán - Nghĩa tiếng Việt)
+
+害怕 | sợ hãi, lo sợ
+- 我有一点害怕。 - Tôi hơi sợ một chút.
+- 她可能很害怕。 - Có lẽ cô bé đang rất sợ.
+
+认识 | quen biết, nhận ra
+- 你认识她吗？ - Bạn có quen cô ấy không?
+- 认识你很高兴！ - Rất vui được làm quen với bạn!
+
+吃惊 | kinh ngạc, ngạc nhiên
+- 我很吃惊。 - Tôi rất ngạc nhiên.
+- 听到这个消息，大家都很吃惊。 - Nghe tin này, mọi người đều rất kinh ngạc.
+
+回答 | trả lời, đáp lại
+- 老人没有马上回答。 - Ông lão không trả lời ngay.
+- 请回答我的问题。 - Xin hãy trả lời câu hỏi của tôi.
+
+相信 | tin tưởng, tin rằng
+- 我不知道应该相信他，还是离开这里。 - Tôi không biết nên tin ông ấy hay rời khỏi đây.
+- 我相信你一定能做好。 - Tôi tin bạn nhất định sẽ làm tốt.
+
+离开 | rời khỏi, rời đi
+- 他已经离开北京了。 - Anh ấy đã rời khỏi Bắc Kinh rồi.
+- 请不要离开这里。 - Xin đừng rời khỏi đây.
+
+消息 | tin tức, tin nhắn
+- 这不是电话，是一个消息。 - Đây không phải cuộc gọi, mà là một tin nhắn.
+- 我有一个好消息告诉你。 - Tôi có một tin tốt báo cho bạn.
+
+马上 | lập tức, ngay lập tức
+- 我马上去人民公园。 - Tôi đi công viên Nhân Dân ngay lập tức.
+- 请等一下，我马上就来。 - Xin đợi một chút, tôi đến ngay đây.
+
+担心 | lo lắng, băn khoăn
+- 我有一点担心。 - Tôi hơi lo lắng một chút.
+- 别担心，一切都会好起来的。 - Đừng lo lắng, mọi chuyện rồi sẽ ổn thôi.
+
+突然 | đột nhiên, bỗng nhiên
+- 突然，我看见地上有一部手机。 - Đột nhiên, tôi nhìn thấy trên mặt đất có một chiếc điện thoại.
+- 老人突然问我一个问题。 - Ông lão đột nhiên hỏi tôi một câu.
+
+慢慢 | chậm rãi, từ từ
+- 老人慢慢地向我走过来。 - Ông lão chậm rãi bước về phía tôi.
+- 别着急，慢慢说。 - Đừng vội, cứ từ từ nói.
+
+个人 | cá nhân / một mình
+- 我个人认为这个计划不错。 - Cá nhân tôi cho rằng kế hoạch này không tệ.
+- 这只是我个人的意见。 - Đây chỉ là ý kiến cá nhân của tôi.
+
+自己 | tự mình, bản thân
+- 我自己回家。 - Tôi tự mình về nhà.
+- 这件事要你自己决定。 - Việc này phải do tự bạn quyết định.
+
+冷静 | bình tĩnh, điềm tĩnh
+- 请你先冷静下来。 - Xin bạn hãy bình tĩnh lại trước đã.
+- 遇到问题要保持冷静。 - Gặp vấn đề phải giữ bình tĩnh.
+
+明白 | hiểu rõ, hiểu ra
+- 我越来越不明白。 - Tôi càng lúc càng không hiểu.
+- 你明白我的意思吗？ - Bạn có hiểu ý tôi không?
+
+刚才 | vừa nãy, lúc nãy
+- 就是刚才打电话给我的小女孩。 - Chính là cô bé vừa gọi điện cho tôi lúc nãy.
+- 你刚才去哪儿了？ - Vừa nãy bạn đi đâu thế?
+
+欢迎 | hoan nghênh, chào đón
+- 欢迎您来北京！ - Chào mừng ngài đến Bắc Kinh!
+- 随时欢迎你来我家玩。 - Luôn chào đón bạn đến nhà tôi chơi.
+
+舒服 | thoải mái, dễ chịu
+- 这几天您在这儿住得舒服吗？ - Mấy hôm nay ông ở đây có thoải mái không?
+- 今天我身体不太舒服。 - Hôm nay trong người tôi không được khỏe lắm.
+
+复习 | ôn tập, ôn bài
+- 明天考试，今天晚上我要复习。 - Mai thi rồi, tối nay tôi phải ôn bài.
+- 学过的生词要常常复习。 - Từ mới đã học phải thường xuyên ôn tập.
+
+布置 | bài trí, trang trí, sắp xếp
+- 你的房间布置得好极了。 - Căn phòng của bạn bài trí đẹp tuyệt vời.`;
+
+    const STORAGE_KEY = 'chp_chinese_flashcard_vocab_v1';
+
+    // State
+    let vocabList = [];
+    let currentIndex = 0;
+    let isAnswerShown = false;
+    let isPinyinHintShown = false;
+    let randomDeck = [];
+    let historyStack = [];
+    let masteredSet = new Set();
+    let hardQueue = [];
+    let hanziWriters = [];
+
+    // Canvas State
+    let canvas, ctx;
+    let isDrawing = false;
+    let strokes = [];
+    let currentStroke = [];
+
+    function init() {
+      setupCanvas();
+
+      // Load saved vocab from localStorage or use default
+      const savedText = localStorage.getItem(STORAGE_KEY);
+      document.getElementById('rawVocabInput').value = savedText && savedText.trim() ? savedText : DEFAULT_VOCAB_TEXT;
+      parseAndApplyVocab(false);
+
+      // Keyboard shortcuts
+      window.addEventListener('keydown', (e) => {
+        if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) return;
+
+        if (e.code === 'Space') {
+          e.preventDefault();
+          toggleAnswer();
+        } else if (e.code === 'ArrowRight' || e.code === 'Enter') {
+          e.preventDefault();
+          nextCard();
+        } else if (e.code === 'ArrowLeft') {
+          e.preventDefault();
+          prevCard();
+        } else if (e.key === 'r' || e.key === 'R') {
+          e.preventDefault();
+          speakCurrentChinese();
+        } else if (e.key === 'c' || e.key === 'C') {
+          e.preventDefault();
+          clearCanvas();
+        } else if ((e.metaKey || e.ctrlKey) && (e.key === 'z' || e.key === 'Z')) {
+          e.preventDefault();
+          undoStroke();
+        }
+      });
+
+      window.addEventListener('resize', () => {
+        resizeCanvas();
+      });
+    }
+
+    // Tự động sinh Pinyin bằng pinyin-pro
+    function toPinyin(text) {
+      if (!text) return '';
+      if (window.pinyinPro && window.pinyinPro.pinyin) {
+        try {
+          return window.pinyinPro.pinyin(text);
+        } catch (err) {
+          console.warn(err);
+        }
+      }
+      return '';
+    }
+
+    // Phân tích cú pháp file text linh hoạt
+    function parseVocabText(rawText) {
+      const lines = rawText.split('\n').map(l => l.trim());
+      const items = [];
+      let currentItem = null;
+
+      for (const line of lines) {
+        if (!line || line.startsWith('#') || line.startsWith('//')) continue;
+
+        // Dòng ví dụ bắt đầu bằng "-" hoặc "•" hoặc "VD:"
+        if ((line.startsWith('-') || line.startsWith('•') || /^VD[:：]/i.test(line)) && currentItem) {
+          const cleanEx = line.replace(/^[-•]|^VD[:：]\s*/i, '').trim();
+          if (!cleanEx) continue;
+
+          let exCn = cleanEx;
+          let exVi = '';
+          if (cleanEx.includes('|')) {
+            const parts = cleanEx.split('|').map(s => s.trim());
+            exCn = parts[0];
+            exVi = parts.slice(1).join(' | ');
+          } else if (cleanEx.includes(' - ')) {
+            const parts = cleanEx.split(' - ').map(s => s.trim());
+            exCn = parts[0];
+            exVi = parts.slice(1).join(' - ');
+          }
+
+          currentItem.examples.push({
+            chinese: exCn,
+            pinyin: toPinyin(exCn),
+            vietnamese: exVi
+          });
+          continue;
+        }
+
+        // Dòng từ vựng chính: Chữ Hán | Nghĩa Việt | (Tuỳ chọn: Ví dụ)
+        const parts = line.split('|').map(s => s.trim());
+        let hanzi = parts[0];
+        let meaning = '';
+        let inlineExamples = [];
+
+        if (parts.length >= 2) {
+          meaning = parts[1];
+          if (parts.length >= 3 && parts[2]) {
+            const rawExs = parts[2].split(';').map(s => s.trim()).filter(Boolean);
+            rawExs.forEach(ex => {
+              const sub = ex.split(' - ').map(s => s.trim());
+              inlineExamples.push({
+                chinese: sub[0],
+                pinyin: toPinyin(sub[0]),
+                vietnamese: sub[1] || ''
+              });
+            });
+          }
+        } else if (line.includes(' - ')) {
+          const dashParts = line.split(' - ').map(s => s.trim());
+          hanzi = dashParts[0];
+          meaning = dashParts.slice(1).join(' - ');
+        }
+
+        if (hanzi) {
+          currentItem = {
+            hanzi: hanzi,
+            pinyin: toPinyin(hanzi),
+            meaning: meaning || '(Chưa nhập nghĩa Việt)',
+            examples: inlineExamples
+          };
+          items.push(currentItem);
+        }
+      }
+
+      return items;
+    }
+
+    function parseAndApplyVocab(notify = false) {
+      const raw = document.getElementById('rawVocabInput').value;
+      const parsed = parseVocabText(raw);
+
+      if (parsed.length === 0) {
+        alert('Không tìm thấy từ vựng nào hợp lệ! Vui lòng nhập theo mẫu: Chữ Hán | Nghĩa tiếng Việt');
+        return;
+      }
+
+      localStorage.setItem(STORAGE_KEY, raw);
+      vocabList = parsed;
+      document.getElementById('totalVocabCount').textContent = vocabList.length;
+
+      rebuildRandomDeck();
+      currentIndex = getNextIndex(true);
+      loadCard(currentIndex);
+
+      if (notify) {
+        showToast(`✅ Đã cập nhật kho từ vựng (${vocabList.length} từ)!`);
+      }
+    }
+
+    function rebuildRandomDeck() {
+      randomDeck = [];
+      for (let i = 0; i < vocabList.length; i++) {
+        if (!masteredSet.has(i)) {
+          randomDeck.push(i);
+        }
+      }
+      if (randomDeck.length === 0) {
+        // Nếu đã thuộc hết thì nạp lại toàn bộ
+        for (let i = 0; i < vocabList.length; i++) randomDeck.push(i);
+      }
+      // Xáo trộn Fisher-Yates
+      for (let i = randomDeck.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [randomDeck[i], randomDeck[j]] = [randomDeck[j], randomDeck[i]];
+      }
+    }
+
+    function getNextIndex(isInitial = false) {
+      if (vocabList.length === 0) return 0;
+      const isRandom = document.getElementById('randomToggle').checked;
+
+      if (!isRandom) {
+        if (isInitial) return 0;
+        return (currentIndex + 1) % vocabList.length;
+      }
+
+      // Ưu tiên từ trong hardQueue với xác suất 40% nếu không trùng ngay thẻ vừa học
+      if (hardQueue.length > 0 && Math.random() < 0.45) {
+        const candidate = hardQueue.shift();
+        if (candidate !== currentIndex || vocabList.length === 1) {
+          return candidate;
+        } else {
+          hardQueue.push(candidate);
+        }
+      }
+
+      if (randomDeck.length === 0) {
+        rebuildRandomDeck();
+      }
+
+      let nextIdx = randomDeck.pop();
+      if (nextIdx === currentIndex && vocabList.length > 1) {
+        if (randomDeck.length === 0) rebuildRandomDeck();
+        const altIdx = randomDeck.pop();
+        randomDeck.unshift(nextIdx);
+        nextIdx = altIdx;
+      }
+      return nextIdx;
+    }
+
+    function loadCard(index) {
+      if (vocabList.length === 0) return;
+      currentIndex = index;
+      const item = vocabList[currentIndex];
+
+      isAnswerShown = false;
+      isPinyinHintShown = false;
+
+      // Ẩn hộp đáp án & thứ tự nét
+      document.getElementById('answerBox').classList.remove('visible');
+      document.getElementById('strokeOrderBox').classList.remove('visible');
+      document.getElementById('btnReveal').textContent = '👁 Hiện Chữ Hán & Ví Dụ (Space)';
+
+      // Cập nhật bộ đếm
+      document.getElementById('cardCounter').textContent =
+        `Thẻ ${currentIndex + 1} / ${vocabList.length} • Đã thuộc: ${masteredSet.size}`;
+
+      // Hiển thị mặt trước theo chế độ
+      renderPromptFace();
+
+      // Chuẩn bị nội dung đáp án
+      document.getElementById('answerHanzi').textContent = item.hanzi;
+      document.getElementById('answerPinyin').textContent = item.pinyin;
+      document.getElementById('answerVi').textContent = item.meaning;
+
+      // Render câu ví dụ
+      const exListEl = document.getElementById('examplesList');
+      const exSectionEl = document.getElementById('examplesSection');
+      exListEl.innerHTML = '';
+
+      if (item.examples && item.examples.length > 0) {
+        exSectionEl.style.display = 'flex';
+        item.examples.forEach((ex) => {
+          const row = document.createElement('div');
+          row.className = 'example-item';
+
+          const textCol = document.createElement('div');
+          textCol.className = 'example-text-group';
+
+          const cnDiv = document.createElement('div');
+          cnDiv.className = 'example-cn';
+          cnDiv.textContent = ex.chinese;
+
+          const pyDiv = document.createElement('div');
+          pyDiv.className = 'example-py';
+          pyDiv.textContent = ex.pinyin || toPinyin(ex.chinese);
+
+          textCol.appendChild(cnDiv);
+          textCol.appendChild(pyDiv);
+
+          if (ex.vietnamese) {
+            const viDiv = document.createElement('div');
+            viDiv.className = 'example-vi';
+            viDiv.textContent = ex.vietnamese;
+            textCol.appendChild(viDiv);
+          }
+
+          const speakBtn = document.createElement('button');
+          speakBtn.className = 'btn-secondary';
+          speakBtn.style.padding = '6px 10px';
+          speakBtn.textContent = '🔊';
+          speakBtn.title = 'Nghe câu ví dụ này';
+          speakBtn.onclick = () => speakText(ex.chinese, 'zh-CN');
+
+          row.appendChild(textCol);
+          row.appendChild(speakBtn);
+          exListEl.appendChild(row);
+        });
+      } else {
+        exSectionEl.style.display = 'none';
+      }
+
+      // Xoá bảng vẽ & dựng lại số ô Mễ Tự Cách theo độ dài từ
+      clearCanvas();
+      updateCanvasOverlay();
+
+      // Tự động đọc âm nếu bật
+      if (document.getElementById('autoSpeakToggle').checked) {
+        const mode = document.getElementById('promptMode').value;
+        if (mode === 'vi_to_zh') {
+          speakCurrentVietnamese();
+        } else {
+          speakCurrentChinese();
+        }
+      }
+    }
+
+    function renderPromptFace() {
+      if (vocabList.length === 0) return;
+      const item = vocabList[currentIndex];
+      const mode = document.getElementById('promptMode').value;
+      const meaningEl = document.getElementById('promptMeaning');
+      const hintEl = document.getElementById('promptPinyinHint');
+      const instrEl = document.getElementById('promptInstruction');
+
+      if (mode === 'vi_to_zh') {
+        instrEl.textContent = '🇻🇳 Xem nghĩa Tiếng Việt ➔ Nhớ & Vẽ chữ Hán vào bảng bên phải';
+        meaningEl.textContent = item.meaning;
+      } else if (mode === 'zh_audio_only') {
+        instrEl.textContent = '🔊 Nghe phát âm Tiếng Trung ➔ Vẽ chữ Hán vào bảng bên phải';
+        meaningEl.textContent = isAnswerShown ? item.meaning : '🎧 (Đang ẩn nghĩa Việt - Hãy nghe âm để viết)';
+      } else {
+        instrEl.textContent = '🔊 Nghe Tiếng Trung + Nghĩa Việt ➔ Vẽ chữ Hán vào bảng bên phải';
+        meaningEl.textContent = item.meaning;
+      }
+
+      hintEl.textContent = (isPinyinHintShown || isAnswerShown) ? `Pinyin: ${item.pinyin}` : '';
+    }
+
+    function onModeChange() {
+      renderPromptFace();
+      if (document.getElementById('autoSpeakToggle').checked) {
+        const mode = document.getElementById('promptMode').value;
+        if (mode === 'vi_to_zh') {
+          speakCurrentVietnamese();
+        } else {
+          speakCurrentChinese();
+        }
+      }
+    }
+
+    function updateModeBadge() {
+      const badge = document.getElementById('modeBadge');
+      const isRandom = document.getElementById('randomToggle').checked;
+      if (isRandom) {
+        badge.className = 'badge random-active';
+        badge.textContent = '🎲 Ngẫu hứng';
+      } else {
+        badge.className = 'badge';
+        badge.textContent = '📋 Tuần tự';
+      }
+    }
+
+    function togglePinyinHint() {
+      isPinyinHintShown = !isPinyinHintShown;
+      renderPromptFace();
+    }
+
+    function toggleAnswer() {
+      isAnswerShown = !isAnswerShown;
+      const answerBox = document.getElementById('answerBox');
+      const btnReveal = document.getElementById('btnReveal');
+
+      if (isAnswerShown) {
+        answerBox.classList.add('visible');
+        btnReveal.textContent = '🙈 Ẩn Đáp Án (Space)';
+        renderPromptFace();
+        updateCanvasOverlay();
+        speakCurrentChinese();
+      } else {
+        answerBox.classList.remove('visible');
+        btnReveal.textContent = '👁 Hiện Chữ Hán & Ví Dụ (Space)';
+        renderPromptFace();
+        updateCanvasOverlay();
+      }
+    }
+
+    function showStrokeOrder() {
+      if (vocabList.length === 0) return;
+      const item = vocabList[currentIndex];
+      const box = document.getElementById('strokeOrderBox');
+      const row = document.getElementById('strokeCharsRow');
+
+      box.classList.add('visible');
+      row.innerHTML = '';
+      hanziWriters = [];
+
+      const chars = Array.from(item.hanzi).filter(ch => /[\u4e00-\u9fa5]/.test(ch));
+      chars.forEach((ch) => {
+        const div = document.createElement('div');
+        div.className = 'stroke-target';
+        row.appendChild(div);
+
+        if (window.HanziWriter) {
+          const writer = HanziWriter.create(div, ch, {
+            width: 90,
+            height: 90,
+            padding: 8,
+            strokeAnimationSpeed: 1.2,
+            delayBetweenStrokes: 180,
+            strokeColor: '#38bdf8',
+            radicalColor: '#34d399',
+            outlineColor: 'rgba(255,255,255,0.18)'
+          });
+          writer.animateCharacter();
+          div.onclick = () => writer.animateCharacter();
+          hanziWriters.push(writer);
+        }
+      });
+    }
+
+    function nextCard() {
+      if (vocabList.length === 0) return;
+      historyStack.push(currentIndex);
+      const nextIdx = getNextIndex(false);
+      loadCard(nextIdx);
+    }
+
+    function prevCard() {
+      if (historyStack.length > 0) {
+        const prevIdx = historyStack.pop();
+        loadCard(prevIdx);
+      } else if (vocabList.length > 0) {
+        const prevIdx = (currentIndex - 1 + vocabList.length) % vocabList.length;
+        loadCard(prevIdx);
+      }
+    }
+
+    function markHardAndNext() {
+      if (!hardQueue.includes(currentIndex)) {
+        hardQueue.push(currentIndex);
+      }
+      masteredSet.delete(currentIndex);
+      showToast('🔁 Đã đưa từ này vào danh sách ưu tiên ôn lại!');
+      nextCard();
+    }
+
+    function markMasteredAndNext() {
+      masteredSet.add(currentIndex);
+      showToast(`✅ Đã thuộc từ "${vocabList[currentIndex].hanzi}"!`);
+      nextCard();
+    }
+
+    // ================= PHÁT ÂM (TTS) =================
+    function speakText(text, lang = 'zh-CN') {
+      if (!('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.lang = lang;
+      utter.rate = lang.startsWith('zh') ? 0.88 : 1.0;
+
+      const allVoices = window.speechSynthesis.getVoices();
+      if (lang.startsWith('zh')) {
+        const zhVoice = allVoices.find(v => v.name.includes('Tingting') || v.lang === 'zh-CN' || v.lang.startsWith('zh'));
+        if (zhVoice) utter.voice = zhVoice;
+      } else if (lang.startsWith('vi')) {
+        const viVoice = allVoices.find(v => v.lang.startsWith('vi'));
+        if (viVoice) utter.voice = viVoice;
+      }
+
+      window.speechSynthesis.speak(utter);
+    }
+
+    function speakCurrentChinese() {
+      if (vocabList.length === 0) return;
+      speakText(vocabList[currentIndex].hanzi, 'zh-CN');
+    }
+
+    function speakCurrentVietnamese() {
+      if (vocabList.length === 0) return;
+      speakText(vocabList[currentIndex].meaning, 'vi-VN');
+    }
+
+    // ================= BẢNG VẼ TAY (MỄ TỰ CÁCH CANVAS) =================
+    function setupCanvas() {
+      canvas = document.getElementById('drawCanvas');
+      ctx = canvas.getContext('2d');
+      resizeCanvas();
+
+      // Pointer Events hỗ trợ cả Chuột, Bút Cảm Ứng, Màn hình Touch
+      canvas.addEventListener('pointerdown', startDraw);
+      canvas.addEventListener('pointermove', moveDraw);
+      window.addEventListener('pointerup', endDraw);
+    }
+
+    function resizeCanvas() {
+      const wrapper = document.getElementById('canvasWrapper');
+      const rect = wrapper.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      redrawCanvas();
+      updateCanvasOverlay();
+    }
+
+    function getCharCellsCount() {
+      if (vocabList.length === 0) return 1;
+      const hanzi = vocabList[currentIndex].hanzi || '';
+      return Math.max(1, Math.min(4, Array.from(hanzi).length));
+    }
+
+    // Vẽ lưới ô vuông Mễ Tự Cách (米字格)
+    function drawMiZiGeGrid() {
+      const wrapper = document.getElementById('canvasWrapper');
+      const w = wrapper.clientWidth;
+      const h = wrapper.clientHeight;
+      const numCells = getCharCellsCount();
+      const cellW = w / numCells;
+
+      ctx.save();
+      for (let i = 0; i < numCells; i++) {
+        const x0 = i * cellW;
+        const y0 = 0;
+
+        // Đường viền ngăn cách giữa các ô chữ
+        if (i > 0) {
+          ctx.strokeStyle = 'rgba(56, 189, 248, 0.35)';
+          ctx.lineWidth = 1.5;
+          ctx.setLineDash([]);
+          ctx.beginPath();
+          ctx.moveTo(x0, 0);
+          ctx.lineTo(x0, h);
+          ctx.stroke();
+        }
+
+        // Đường trục ngang - dọc - chéo nét đứt của ô Mễ Tự Cách
+        ctx.strokeStyle = 'rgba(148, 163, 184, 0.16)';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([6, 6]);
+
+        ctx.beginPath();
+        // Ngang giữa
+        ctx.moveTo(x0, h / 2);
+        ctx.lineTo(x0 + cellW, h / 2);
+        // Dọc giữa
+        ctx.moveTo(x0 + cellW / 2, 0);
+        ctx.lineTo(x0 + cellW / 2, h);
+        // Hai đường chéo
+        ctx.moveTo(x0, 0);
+        ctx.lineTo(x0 + cellW, h);
+        ctx.moveTo(x0 + cellW, 0);
+        ctx.lineTo(x0, h);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    function updateCanvasOverlay() {
+      if (vocabList.length === 0) return;
+      const hanzi = vocabList[currentIndex].hanzi || '';
+      const chars = Array.from(hanzi);
+      document.getElementById('charCountLabel').textContent = chars.length;
+
+      const overlay = document.getElementById('canvasGuideOverlay');
+      const wrapper = document.getElementById('canvasWrapper');
+      const numCells = Math.max(1, Math.min(4, chars.length));
+      const cellWidth = wrapper.clientWidth / numCells;
+      const fontSize = Math.min(cellWidth * 0.72, wrapper.clientHeight * 0.72);
+
+      overlay.innerHTML = '';
+      chars.slice(0, 4).forEach(ch => {
+        const span = document.createElement('span');
+        span.textContent = ch;
+        span.style.fontSize = `${fontSize}px`;
+        span.style.width = `${100 / numCells}%`;
+        span.style.textAlign = 'center';
+        overlay.appendChild(span);
+      });
+
+      const traceMode = document.getElementById('traceToggle').checked;
+      overlay.classList.remove('trace-mode', 'compare-mode');
+
+      if (isAnswerShown) {
+        overlay.classList.add('compare-mode');
+      } else if (traceMode) {
+        overlay.classList.add('trace-mode');
+      }
+
+      redrawCanvas();
+    }
+
+    function getPointerPos(e) {
+      const rect = canvas.getBoundingClientRect();
+      return {
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top
+      };
+    }
+
+    function startDraw(e) {
+      isDrawing = true;
+      const pos = getPointerPos(e);
+      const size = parseFloat(document.getElementById('penSize').value) || 10;
+      currentStroke = {
+        size,
+        color: '#f8fafc',
+        points: [pos]
+      };
+      strokes.push(currentStroke);
+      redrawCanvas();
+    }
+
+    function moveDraw(e) {
+      if (!isDrawing || !currentStroke) return;
+      const pos = getPointerPos(e);
+      currentStroke.points.push(pos);
+      redrawCanvas();
+    }
+
+    function endDraw() {
+      if (!isDrawing) return;
+      isDrawing = false;
+      currentStroke = null;
+    }
+
+    function redrawCanvas() {
+      if (!ctx) return;
+      const wrapper = document.getElementById('canvasWrapper');
+      ctx.clearRect(0, 0, wrapper.clientWidth, wrapper.clientHeight);
+
+      drawMiZiGeGrid();
+
+      for (const stroke of strokes) {
+        const pts = stroke.points;
+        if (!pts || pts.length === 0) continue;
+
+        ctx.save();
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.strokeStyle = stroke.color;
+        ctx.lineWidth = stroke.size;
+        ctx.shadowColor = 'rgba(56, 189, 248, 0.35)';
+        ctx.shadowBlur = 4;
+
+        ctx.beginPath();
+        if (pts.length === 1) {
+          ctx.arc(pts[0].x, pts[0].y, stroke.size / 2, 0, Math.PI * 2);
+          ctx.fillStyle = stroke.color;
+          ctx.fill();
+        } else {
+          ctx.moveTo(pts[0].x, pts[0].y);
+          for (let i = 1; i < pts.length - 1; i++) {
+            const midX = (pts[i].x + pts[i + 1].x) / 2;
+            const midY = (pts[i].y + pts[i + 1].y) / 2;
+            ctx.quadraticCurveTo(pts[i].x, pts[i].y, midX, midY);
+          }
+          const last = pts[pts.length - 1];
+          ctx.lineTo(last.x, last.y);
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+    }
+
+    function undoStroke() {
+      if (strokes.length > 0) {
+        strokes.pop();
+        redrawCanvas();
+      }
+    }
+
+    function clearCanvas() {
+      strokes = [];
+      currentStroke = null;
+      redrawCanvas();
+    }
+
+    // ================= THÊM TỪ MỚI & QUẢN LÝ FILE TEXT =================
+    function quickAddWord() {
+      const hanzi = document.getElementById('newHanzi').value.trim();
+      const meaning = document.getElementById('newMeaning').value.trim();
+      const example = document.getElementById('newExample').value.trim();
+
+      if (!hanzi) {
+        alert('Vui lòng nhập chữ Hán cần thêm!');
+        document.getElementById('newHanzi').focus();
+        return;
+      }
+
+      let block = `\n\n${hanzi} | ${meaning || '(Chưa nhập nghĩa)'}`;
+      if (example) {
+        block += `\n- ${example}`;
+      }
+
+      const rawArea = document.getElementById('rawVocabInput');
+      rawArea.value = rawArea.value.trim() + block;
+
+      document.getElementById('newHanzi').value = '';
+      document.getElementById('newMeaning').value = '';
+      document.getElementById('newExample').value = '';
+
+      parseAndApplyVocab(false);
+      // Chuyển ngay tới từ vừa thêm để luyện thử
+      currentIndex = vocabList.length - 1;
+      loadCard(currentIndex);
+      showToast(`🎉 Đã thêm từ "${hanzi}" vào kho từ vựng!`);
+    }
+
+    function handleFileUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        document.getElementById('rawVocabInput').value = e.target.result;
+        parseAndApplyVocab(false);
+        showToast(`📂 Đã nạp ${vocabList.length} từ từ file: ${file.name}`);
+      };
+      reader.readAsText(file);
+    }
+
+    function exportToTextFile() {
+      const raw = document.getElementById('rawVocabInput').value;
+      const blob = new Blob([raw], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'tu_vung_flashcard.txt';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('💾 Đã tải xuống file tu_vung_flashcard.txt!');
+    }
+
+    function resetToDefaultSample() {
+      if (!confirm('Bạn có muốn khôi phục lại bộ 20 từ vựng mẫu ban đầu không?')) return;
+      document.getElementById('rawVocabInput').value = DEFAULT_VOCAB_TEXT;
+      masteredSet.clear();
+      hardQueue = [];
+      parseAndApplyVocab(true);
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3200);
+    }
+
+    window.onload = init;
+  </script>
+</body>
+</html>
+

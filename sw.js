@@ -1,7 +1,9 @@
-const CACHE_NAME = 'cn-flashcard-v2';
+const CACHE_NAME = 'cn-flashcard-v3';
 const CORE_ASSETS = [
   './',
   './index.html',
+  './flashcard_writer.html',
+  './dictation_player.html',
   './manifest.json',
   './icon-192.png',
   './icon-512.png'
@@ -29,7 +31,7 @@ self.addEventListener('fetch', (event) => {
   if (url.origin !== self.location.origin) return;
 
   // Network-first for HTML so updated builds appear immediately when online
-  if (event.request.mode === 'navigate' || url.pathname.endsWith('index.html')) {
+  if (event.request.mode === 'navigate' || url.pathname.endsWith('.html')) {
     event.respondWith(
       fetch(event.request)
         .then((res) => {

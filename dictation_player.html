@@ -1,0 +1,1391 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Luyện Nghe & Viết Tiếng Trung (Dictation Player)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/pinyin-pro@3.29.5/dist/index.js"></script>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: rgba(30, 41, 59, 0.7);
+      --card-border: rgba(255, 255, 255, 0.1);
+      --accent: #38bdf8;
+      --accent-glow: rgba(56, 189, 248, 0.25);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent-green: #34d399;
+      --accent-amber: #fbbf24;
+      --accent-rose: #f43f5e;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: radial-gradient(circle at 50% 0%, #1e293b 0%, #0f172a 100%);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px 16px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 900px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 8px;
+    }
+
+    header h1 {
+      font-size: 26px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #38bdf8, #818cf8, #c084fc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 6px;
+    }
+
+    header p {
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Player View */
+    .player-card {
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 18px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .progress-bar-container {
+      width: 100%;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent), var(--accent-green));
+      transition: width 0.3s ease;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+      background: rgba(56, 189, 248, 0.1);
+      color: var(--accent);
+      border: 1px solid rgba(56, 189, 248, 0.2);
+    }
+
+    .status-badge.reading {
+      background: rgba(52, 211, 153, 0.15);
+      color: var(--accent-green);
+      border-color: rgba(52, 211, 153, 0.3);
+      animation: pulse 1.5s infinite;
+    }
+
+    .status-badge.waiting {
+      background: rgba(251, 191, 36, 0.15);
+      color: var(--accent-amber);
+      border-color: rgba(251, 191, 36, 0.3);
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.85; transform: scale(1.02); }
+    }
+
+    .sentence-display {
+      min-height: 140px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+    }
+
+    .chinese-text {
+      font-family: 'Noto Sans SC', sans-serif;
+      font-size: 34px;
+      font-weight: 600;
+      line-height: 1.4;
+      letter-spacing: 1.5px;
+      color: #ffffff;
+      transition: all 0.25s ease;
+    }
+
+    .chinese-text.hidden {
+      filter: blur(8px);
+      user-select: none;
+      opacity: 0.3;
+    }
+
+    .pinyin-text {
+      font-size: 18px;
+      color: #93c5fd;
+      font-weight: 500;
+      transition: all 0.25s ease;
+    }
+
+    .pinyin-text.hidden {
+      display: none;
+    }
+
+    .vietnamese-text {
+      font-size: 16px;
+      color: var(--text-muted);
+      font-style: italic;
+      transition: all 0.25s ease;
+    }
+
+    .vietnamese-text.hidden {
+      display: none;
+    }
+
+    /* Countdown Display */
+    .timer-circle {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      border: 3px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--accent-amber);
+      position: relative;
+    }
+
+    .timer-circle.active {
+      border-color: var(--accent-amber);
+      box-shadow: 0 0 20px rgba(251, 191, 36, 0.25);
+    }
+
+    /* Controls */
+    .controls-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      cursor: pointer;
+      border: none;
+      outline: none;
+      font-family: inherit;
+      transition: all 0.2s ease;
+    }
+
+    .btn-main {
+      padding: 12px 28px;
+      font-size: 16px;
+      font-weight: 600;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #0284c7, #2563eb);
+      color: white;
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-main:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(37, 99, 235, 0.5);
+    }
+
+    .btn-secondary {
+      padding: 10px 20px;
+      font-size: 14px;
+      font-weight: 600;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-main);
+      border: 1px solid var(--card-border);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.14);
+    }
+
+    /* Toggles directly on player card */
+    .display-toggles {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+      margin: 4px 0 10px 0;
+      padding: 8px 16px;
+      background: rgba(15, 23, 42, 0.5);
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .toggle-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-main);
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.2s ease;
+    }
+
+    .toggle-pill:hover {
+      background: rgba(255, 255, 255, 0.14);
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+
+    .toggle-pill input[type="checkbox"] {
+      accent-color: var(--accent);
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+    }
+
+    /* Settings section */
+    .settings-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-top: 10px;
+    }
+
+    .setting-item {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .setting-item label {
+      font-size: 13px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .setting-item input, .setting-item select {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 8px 12px;
+      color: var(--text-main);
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+    }
+
+    .setting-item input:focus, .setting-item select:focus {
+      border-color: var(--accent);
+    }
+
+    .toggle-group {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    .toggle-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--text-muted);
+      cursor: pointer;
+    }
+
+    .toggle-label input {
+      accent-color: var(--accent);
+      width: 16px;
+      height: 16px;
+    }
+
+    /* Text Input Area */
+    .input-section textarea {
+      width: 100%;
+      height: 180px;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 14px;
+      color: var(--text-main);
+      font-family: monospace;
+      font-size: 14px;
+      line-height: 1.6;
+      resize: vertical;
+      outline: none;
+    }
+
+    .input-section textarea:focus {
+      border-color: var(--accent);
+    }
+
+    .action-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 12px;
+    }
+
+    .shortcut-tip {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-align: center;
+      margin-top: 8px;
+    }
+
+    /* Toast notification */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: linear-gradient(135deg, #059669, #10b981);
+      color: white;
+      padding: 14px 24px;
+      border-radius: 14px;
+      font-size: 14px;
+      font-weight: 600;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      transform: translateY(120px);
+      opacity: 0;
+      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 9999;
+      pointer-events: none;
+    }
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  
+    /* App Switcher Bar */
+    .app-nav {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      background: rgba(15, 23, 42, 0.72);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 14px;
+      padding: 4px;
+      width: 100%;
+    }
+    .app-nav-link {
+      min-height: 38px;
+      padding: 6px 10px;
+      border-radius: 10px;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 700;
+      color: #94a3b8;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: background 0.15s ease, color 0.15s ease;
+      white-space: nowrap;
+    }
+    .app-nav-link:hover {
+      background: rgba(255, 255, 255, 0.06);
+      color: #f8fafc;
+    }
+    .app-nav-link.active {
+      background: rgba(56, 189, 248, 0.16);
+      color: #38bdf8;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <nav class="app-nav" aria-label="Chuyển đổi công cụ học">
+      <a class="app-nav-link" href="index.html">🃏 Flashcard</a>
+      <a class="app-nav-link" href="flashcard_writer.html">✍️ Luyện viết</a>
+      <a class="app-nav-link active" href="dictation_player.html" aria-current="page">🎧 Nghe chép</a>
+    </nav>
+
+    <header>
+      <h1>🇨🇳 Luyện Nghe & Viết Tiếng Trung</h1>
+      <p>Tự động đọc 2 lần kèm thời gian nghỉ để chép chính tả (Hands-free Dictation)</p>
+    </header>
+
+    <!-- Player Card -->
+    <div class="card player-card">
+      <div class="progress-bar-container">
+        <div class="progress-bar" id="progressBar"></div>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
+        <span id="sentenceCounter" style="font-size: 13px; color: var(--text-muted);">Câu 0 / 0</span>
+        <div id="statusBadge" class="status-badge">Sẵn sàng</div>
+      </div>
+
+      <div class="sentence-display">
+        <div id="chineseDisplay" class="chinese-text">Vui lòng dán nội dung bên dưới và bấm "Bắt đầu"</div>
+        <div id="pinyinDisplay" class="pinyin-text"></div>
+        <div id="vietnameseDisplay" class="vietnamese-text"></div>
+      </div>
+
+      <!-- Thanh nút tích Bật/Ẩn hiển thị Chữ Hán, Phiên âm, Tiếng Việt -->
+      <div class="display-toggles">
+        <label class="toggle-pill">
+          <input type="checkbox" id="toggleChinese" checked onchange="updateDisplay()">
+          <span>🇨🇳 Hiện Chữ Hán</span>
+        </label>
+        <label class="toggle-pill">
+          <input type="checkbox" id="togglePinyin" checked onchange="updateDisplay()">
+          <span>🔤 Hiện Pinyin (Phiên âm)</span>
+        </label>
+        <label class="toggle-pill">
+          <input type="checkbox" id="toggleVietnamese" checked onchange="updateDisplay()">
+          <span>🇻🇳 Hiện Dịch Tiếng Việt</span>
+        </label>
+      </div>
+
+      <div class="timer-circle" id="timerCircle">
+        <span id="timerText">--</span>
+      </div>
+
+      <div class="controls-row">
+        <button class="btn-secondary" id="btnPrev" onclick="prevSentence()">⏮ Câu trước</button>
+        <button class="btn-main" id="btnPlayPause" onclick="togglePlay()">▶ Bắt đầu học</button>
+        <button class="btn-secondary" id="btnNext" onclick="nextSentence()">Câu kế ⏭</button>
+        <button class="btn-secondary" id="btnReplay" onclick="replayCurrent()">🔁 Đọc lại câu này</button>
+      </div>
+
+      <div class="shortcut-tip">
+        Phím tắt: <kbd>Space</kbd> Tạm dừng/Tiếp tục • <kbd>←</kbd> Câu trước • <kbd>→</kbd> Câu tiếp theo • <kbd>R</kbd> Đọc lại
+      </div>
+    </div>
+
+    <!-- Settings Card -->
+    <div class="card">
+      <h3 style="font-size: 16px; margin-bottom: 12px; color: #cbd5e1;">⚙️ Cấu hình thời gian & Giọng đọc</h3>
+      <div class="settings-grid">
+        <div class="setting-item">
+          <label>Nghỉ giữa 2 lần đọc (giây):</label>
+          <input type="number" id="pauseBetweenRepeats" value="5" min="1" max="60">
+        </div>
+        <div class="setting-item">
+          <label>Nghỉ để viết câu tiếp (giây):</label>
+          <input type="number" id="pauseToWrite" value="5" min="1" max="120">
+        </div>
+        <div class="setting-item">
+          <label>Số lần lặp lại mỗi câu:</label>
+          <input type="number" id="repeatCount" value="2" min="1" max="10">
+        </div>
+        <div class="setting-item">
+          <label>Tốc độ đọc:</label>
+          <select id="speechRate">
+            <option value="0.75">Chậm (0.75x)</option>
+            <option value="0.9" selected>Vừa phải (0.9x)</option>
+            <option value="1.0">Bình thường (1.0x)</option>
+            <option value="1.2">Nhanh (1.2x)</option>
+          </select>
+        </div>
+        <div class="setting-item">
+          <label>Chọn giọng đọc:</label>
+          <select id="voiceSelect">
+            <option value="">Đang tải giọng đọc...</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="toggle-group">
+        <label class="toggle-label">
+          <input type="checkbox" id="filterPrefix" checked> Bỏ tiền tố người nói ("(男)：", "(女)：", "(大卫)："...) khi phát âm
+        </label>
+        <label class="toggle-label">
+          <input type="checkbox" id="autoTransToggle" checked> Tự động dịch nghĩa tiếng Việt nếu bài nạp chỉ có chữ Hán
+        </label>
+      </div>
+    </div>
+
+    <!-- Input Card -->
+    <div class="card input-section">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
+        <h3 style="font-size: 16px; color: #cbd5e1;">📝 Nội dung bài học (Paste từ text.md hoặc bất kỳ nguồn nào)</h3>
+        <div style="display: flex; gap: 8px;">
+          <input type="file" id="fileInput" accept=".md,.txt" style="display: none;" onchange="handleFileSelect(event)">
+          <button class="btn-secondary" style="font-size: 12px; padding: 6px 12px; color: #38bdf8; border-color: rgba(56, 189, 248, 0.4);" onclick="document.getElementById('fileInput').click()">📂 Mở file .md (text.md)</button>
+          <button class="btn-secondary" style="font-size: 12px; padding: 6px 12px; color: #f87171; border-color: rgba(248, 113, 113, 0.4);" onclick="clearInput()">🗑 Xoá trắng ô để dán bài mới</button>
+          <button class="btn-secondary" style="font-size: 12px; padding: 6px 12px;" onclick="loadSampleText()">Nạp bài mẫu</button>
+        </div>
+      </div>
+      <textarea id="rawInput" placeholder="Dán nội dung bài học vào đây..."></textarea>
+      <div class="action-row">
+        <span style="font-size: 13px; color: var(--text-muted);" id="parsedInfo">Chưa tải dữ liệu</span>
+        <button class="btn-main" style="padding: 8px 20px; font-size: 14px;" onclick="parseAndLoad()">Cập nhật danh sách câu</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // State
+    let sentences = [];
+    let currentIndex = 0;
+    let isPlaying = false;
+    let isPaused = false;
+    let timerInterval = null;
+    let synth = window.speechSynthesis;
+    let voices = [];
+    let isAborted = false;
+    let activePauseHandler = null;
+    let activeResumeHandler = null;
+    let activeAbortHandler = null;
+
+    // Sample data from text.md
+    const SAMPLE_TEXT = `🇨🇳  **Chữ Hán (简体字)** :
+(男)：你是学生吗？
+(女)：不是，我是老师。
+(男)：你是中国学生吗？
+(女)：不是，我是美国学生。
+(男)：您好，您是美国人吗？
+(女)：是，我是美国人。
+(男)：老师，您叫什么名字？
+(女)：我叫李月。
+(男)：他是谁？
+(女)：他是我的汉语老师。
+(男)：他叫什么名字？
+(女)：他叫大卫，他是美国人。
+(男)：她是哪国人？
+(女)：她是中国人。
+(男)：她是谁？
+(女)：她是我同学，她叫玛丽。
+(男)：你女儿今年几岁了？
+(女)：她今年5岁了。
+
+🔤  **Pinyin (汉语拼音)** :
+Nán: Nǐ shì xuéshēng ma?
+Nǚ: Bú shì, wǒ shì lǎoshī.
+Nán: Nǐ shì Zhōngguó xuéshēng ma?
+Nǚ: Bú shì, wǒ shì Měiguó xuéshēng.
+Nán: Nín hǎo, nín shì Měiguórén ma?
+Nǚ: Shì, wǒ shì Měiguórén.
+Nán: Lǎoshī, nín jiào shénme míngzi?
+Nǚ: Wǒ jiào Lǐ Yuè.
+Nán: Tā shì shéi?
+Nǚ: Tā shì wǒ de Hànyǔ lǎoshī.
+Nán: Tā jiào shénme míngzi?
+Nǚ: Tā jiào Dàwèi, tā shì Měiguórén.
+Nán: Tā shì nǎ guó rén?
+Nǚ: Tā shì Zhōngguórén.
+Nán: Tā shì shéi?
+Nǚ: Tā shì wǒ tóngxué, tā jiào Mǎlì.
+Nán: Nǐ nǚ'ér jīnnián jǐ suì le?
+Nǚ: Tā jīnnián wǔ suì le.
+
+🇻🇳  **Tải / Dịch nghĩa** :
+Nam: Bạn là học sinh phải không?
+Nữ: Không phải, tôi là giáo viên.
+Nam: Bạn là học sinh Trung Quốc phải không?
+Nữ: Không phải, tôi là học sinh Mỹ.
+Nam: Xin chào, ngài/bạn là người Mỹ phải không?
+Nữ: Vâng, tôi là người Mỹ.
+Nam: Thưa cô, cô tên là gì ạ?
+Nữ: Cô tên là Lý Nguyệt.
+Nam: Anh ấy là ai?
+Nữ: Anh ấy là giáo viên tiếng Trung của tôi.
+Nam: Anh ấy tên là gì?
+Nữ: Anh ấy tên là David, anh ấy là người Mỹ.
+Nam: Cô ấy là người nước nào?
+Nữ: Cô ấy là người Trung Quốc.
+Nam: Cô ấy là ai?
+Nữ: Cô ấy là bạn học của tôi, cô ấy tên là Mary.
+Nam: Con gái bạn năm nay mấy tuổi rồi?
+Nữ: Bé năm nay 5 tuổi rồi.`;
+
+    function loadVoices() {
+      voices = synth.getVoices().filter(v => v.lang.startsWith('zh') || v.lang.startsWith('cmn'));
+      const select = document.getElementById('voiceSelect');
+      select.innerHTML = '';
+
+      if (voices.length === 0) {
+        // Fallback option
+        const opt = document.createElement('option');
+        opt.value = 'default_zh';
+        opt.textContent = 'Giọng Trung Quốc mặc định (zh-CN)';
+        select.appendChild(opt);
+      } else {
+        voices.forEach((v, index) => {
+          const opt = document.createElement('option');
+          opt.value = index;
+          opt.textContent = `${v.name} (${v.lang})`;
+          if (v.name.includes('Tingting') || v.name.includes('Google') || v.lang === 'zh-CN') {
+            opt.selected = true;
+          }
+          select.appendChild(opt);
+        });
+      }
+    }
+
+    if (speechSynthesis.onvoiceschanged !== undefined) {
+      speechSynthesis.onvoiceschanged = loadVoices;
+    }
+
+    function init() {
+      loadVoices();
+      document.getElementById('rawInput').value = SAMPLE_TEXT;
+      parseAndLoad();
+
+      // Setup Keyboard shortcuts
+      window.addEventListener('keydown', (e) => {
+        if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') return;
+        if (e.code === 'Space') {
+          e.preventDefault();
+          togglePlay();
+        } else if (e.code === 'ArrowRight') {
+          e.preventDefault();
+          nextSentence();
+        } else if (e.code === 'ArrowLeft') {
+          e.preventDefault();
+          prevSentence();
+        } else if (e.key === 'r' || e.key === 'R') {
+          e.preventDefault();
+          replayCurrent();
+        }
+      });
+
+      // Toggle display events on Player Card
+      document.getElementById('toggleChinese').addEventListener('change', updateDisplay);
+      document.getElementById('togglePinyin').addEventListener('change', updateDisplay);
+      document.getElementById('toggleVietnamese').addEventListener('change', updateDisplay);
+    }
+
+    function handleFileSelect(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        document.getElementById('rawInput').value = e.target.result;
+        parseAndLoad();
+        showToast('Đã nạp thành công: ' + file.name);
+      };
+      reader.readAsText(file);
+    }
+
+    function clearInput() {
+      stopPlay();
+      document.getElementById('rawInput').value = '';
+      document.getElementById('rawInput').focus();
+      document.getElementById('parsedInfo').textContent = 'Đã xoá trắng. Hãy dán nội dung mới vào ô.';
+    }
+
+    function showToast(msg) {
+      let toast = document.getElementById('toast');
+      if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'toast';
+        toast.className = 'toast';
+        document.body.appendChild(toast);
+      }
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3500);
+    }
+
+    // Tự động sinh Pinyin cho chữ Hán
+    function autoGeneratePinyin(chineseText) {
+      if (window.pinyinPro && window.pinyinPro.pinyin) {
+        try {
+          return window.pinyinPro.pinyin(chineseText);
+        } catch (e) {
+          console.warn("pinyinPro error:", e);
+        }
+      }
+      return "";
+    }
+
+    // Tự động dịch tiếng Việt trong nền (dùng MyMemory API miễn phí)
+    async function autoTranslateVietnamese(chineseText) {
+      const match = chineseText.match(/^(?:\([^)]*\)|男|女|Nam|Nữ|A|B)[：:\s]+/);
+      const prefix = match ? match[0] : '';
+      const clean = chineseText.replace(/^(?:\([^)]*\)|男|女|Nam|Nữ|A|B)[：:\s]+/, '').trim();
+      
+      if (!clean) return "";
+
+      let viPrefix = prefix;
+      if (prefix.includes('男')) viPrefix = '(Nam): ';
+      if (prefix.includes('女')) viPrefix = '(Nữ): ';
+
+      try {
+        const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(clean)}&langpair=zh-CN|vi`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.responseData && data.responseData.translatedText) {
+            return viPrefix + data.responseData.translatedText.trim();
+          }
+        }
+      } catch (e) {
+        console.warn("Translation fetch error:", e);
+      }
+      return "";
+    }
+
+    function loadSampleText() {
+      stopPlay();
+      document.getElementById('rawInput').value = SAMPLE_TEXT;
+      parseAndLoad(true);
+    }
+
+    // Parsing structured markdown text, interleaved lines, or simple lines
+    function parseAndLoad(isSample = false) {
+      stopPlay(); // Dừng ngay mọi audio / countdown đang chạy
+
+      const raw = document.getElementById('rawInput').value.trim();
+      sentences = [];
+
+      if (!raw) {
+        if (!isSample) alert("Ô nhập nội dung đang trống! Vui lòng dán nội dung bài học vào ô.");
+        return;
+      }
+
+      // 1. Kiểm tra trường hợp người dùng dán bài mới vào ĐẦU ô textarea mà chưa xoá bài cũ
+      const firstSectionMatch = raw.search(/(?:🇨🇳|\*\*Chữ Hán|🔤|\*\*Pinyin)/i);
+      const hasHanziHeader = /Chữ Hán|简体字/i.test(raw);
+      const hasPinyinHeader = /Pinyin|汉语拼音/i.test(raw);
+
+      if (firstSectionMatch > 0) {
+        // Có văn bản trước header đầu tiên (người dùng dán thêm bài mới ở phía trên bài mẫu cũ)
+        const prefixText = raw.substring(0, firstSectionMatch).trim();
+        const prefixLines = prefixText.split('\n')
+          .map(l => l.trim())
+          .filter(l => l && !l.startsWith('#') && !/Chữ Hán|Pinyin|Dịch/i.test(l));
+        
+        if (prefixLines.some(l => /[\u4e00-\u9fa5]/.test(l))) {
+          // Ưu tiên nạp phần bài mới người dùng dán ở đầu
+          prefixLines.forEach(l => {
+            sentences.push({
+              chinese: l,
+              pinyin: '',
+              vietnamese: ''
+            });
+          });
+        }
+      }
+
+      // 2. Nếu chưa lấy được từ phần đầu, thử parse chuẩn markdown 3 phần
+      if (sentences.length === 0 && hasHanziHeader && hasPinyinHeader) {
+        const sections = raw.split(/\n(?=(?:🇨🇳|\*\*Chữ Hán|🔤|\*\*Pinyin|🇻🇳|\*\*Tải|\*\*Dịch))/i);
+        let hanziLines = [];
+        let pinyinLines = [];
+        let transLines = [];
+
+        for (const sec of sections) {
+          const cleanSec = sec.trim();
+          if (/Chữ Hán|简体字/i.test(cleanSec)) {
+            hanziLines = cleanSec.split('\n')
+              .map(l => l.trim())
+              .filter(l => l && !l.includes('Chữ Hán') && !l.includes('简体字') && !l.startsWith('🇨🇳') && !l.startsWith('#'));
+          } else if (/Pinyin|汉语拼音/i.test(cleanSec)) {
+            pinyinLines = cleanSec.split('\n')
+              .map(l => l.trim())
+              .filter(l => l && !l.includes('Pinyin') && !l.includes('拼音') && !l.startsWith('🔤') && !l.startsWith('#'));
+          } else if (/Dịch|Tải/i.test(cleanSec)) {
+            transLines = cleanSec.split('\n')
+              .map(l => l.trim())
+              .filter(l => l && !l.includes('Dịch') && !l.includes('Tải') && !l.startsWith('🇻🇳') && !l.startsWith('#'));
+          }
+        }
+
+        for (let i = 0; i < hanziLines.length; i++) {
+          sentences.push({
+            chinese: hanziLines[i],
+            pinyin: pinyinLines[i] || '',
+            vietnamese: transLines[i] || ''
+          });
+        }
+      }
+
+      // 3. Nếu không có header markdown (dán văn bản bình thường, hội thoại), kiểm tra xen kẽ hoặc từng dòng
+      if (sentences.length === 0) {
+        const lines = raw.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+        
+        // Kiểm tra xem có phải dạng xen kẽ (1 dòng chữ Hán, 1 dòng Pinyin/Dịch...)
+        let isInterleaved = false;
+        if (lines.length >= 2) {
+          const hasChinese0 = /[\u4e00-\u9fa5]/.test(lines[0]);
+          const hasChinese1 = /[\u4e00-\u9fa5]/.test(lines[1]);
+          if (hasChinese0 && !hasChinese1) {
+            isInterleaved = true;
+          }
+        }
+
+        if (isInterleaved) {
+          let i = 0;
+          while (i < lines.length) {
+            if (/[\u4e00-\u9fa5]/.test(lines[i])) {
+              const chinese = lines[i];
+              let pinyin = '';
+              let trans = '';
+              if (i + 1 < lines.length && !/[\u4e00-\u9fa5]/.test(lines[i + 1])) {
+                pinyin = lines[i + 1];
+                if (i + 2 < lines.length && !/[\u4e00-\u9fa5]/.test(lines[i + 2])) {
+                  trans = lines[i + 2];
+                  i += 3;
+                } else {
+                  i += 2;
+                }
+              } else {
+                i += 1;
+              }
+              sentences.push({ chinese, pinyin, vietnamese: trans });
+            } else {
+              i++;
+            }
+          }
+        } else {
+          lines.forEach(l => {
+            if (/Chữ Hán|简体字|Pinyin|汉语拼音|Dịch nghĩa/i.test(l)) return;
+            sentences.push({
+              chinese: l,
+              pinyin: '',
+              vietnamese: ''
+            });
+          });
+        }
+      }
+
+      if (sentences.length === 0) {
+        if (!isSample) alert("Không nhận diện được câu nào! Vui lòng kiểm tra lại nội dung dán vào.");
+        return;
+      }
+
+      // Tự động tạo Pinyin nếu bài nạp vào chưa có
+      sentences.forEach(item => {
+        if (!item.pinyin) {
+          item.pinyin = autoGeneratePinyin(item.chinese);
+        }
+      });
+
+      // Tự động dịch tiếng Việt trong nền nếu chưa có
+      const autoTransAllowed = document.getElementById('autoTransToggle') ? document.getElementById('autoTransToggle').checked : true;
+      if (autoTransAllowed) {
+        (async () => {
+          for (let i = 0; i < sentences.length; i++) {
+            if (!sentences[i].vietnamese) {
+              const vi = await autoTranslateVietnamese(sentences[i].chinese);
+              if (vi) {
+                sentences[i].vietnamese = vi;
+                if (i === currentIndex) {
+                  updateDisplay();
+                }
+              }
+            }
+          }
+        })();
+      }
+
+      currentIndex = 0;
+      document.getElementById('parsedInfo').textContent = `✅ Đã nhận diện: ${sentences.length} câu`;
+      
+      const badge = document.getElementById('statusBadge');
+      badge.className = 'status-badge';
+      badge.textContent = 'Sẵn sàng';
+
+      updateDisplay();
+
+      if (!isSample) {
+        // Cuộn mượt lên khung phát để người dùng thấy ngay câu đầu tiên của bài mới
+        document.querySelector('.player-card').scrollIntoView({ behavior: 'smooth' });
+        showToast(`🎉 Đã nạp thành công ${sentences.length} câu mới! Bấm "Bắt đầu học" để nghe.`);
+      }
+    }
+
+    function updateDisplay() {
+      if (sentences.length === 0) return;
+      const cur = sentences[currentIndex];
+      const chineseEl = document.getElementById('chineseDisplay');
+      const pinyinEl = document.getElementById('pinyinDisplay');
+      const viEl = document.getElementById('vietnameseDisplay');
+
+      // Đảm bảo Pinyin luôn được tạo nếu thiếu
+      if (!cur.pinyin) {
+        cur.pinyin = autoGeneratePinyin(cur.chinese);
+      }
+
+      chineseEl.textContent = cur.chinese;
+      pinyinEl.textContent = cur.pinyin || '';
+      viEl.textContent = cur.vietnamese || '';
+
+      const showChinese = document.getElementById('toggleChinese').checked;
+      const showPinyin = document.getElementById('togglePinyin').checked;
+      const showVi = document.getElementById('toggleVietnamese').checked;
+
+      // Xử lý Chữ Hán
+      if (showChinese) {
+        chineseEl.classList.remove('hidden');
+      } else {
+        chineseEl.classList.add('hidden');
+      }
+
+      // Xử lý Pinyin
+      if (showPinyin && pinyinEl.textContent) {
+        pinyinEl.style.display = 'block';
+      } else {
+        pinyinEl.style.display = 'none';
+      }
+
+      // Xử lý Tiếng Việt
+      if (showVi && viEl.textContent) {
+        viEl.style.display = 'block';
+      } else {
+        viEl.style.display = 'none';
+      }
+
+      // Cập nhật class active cho các nút pill
+      const pillCn = document.getElementById('toggleChinese').closest('.toggle-pill');
+      const pillPy = document.getElementById('togglePinyin').closest('.toggle-pill');
+      const pillVi = document.getElementById('toggleVietnamese').closest('.toggle-pill');
+      if (pillCn) pillCn.classList.toggle('active', showChinese);
+      if (pillPy) pillPy.classList.toggle('active', showPinyin);
+      if (pillVi) pillVi.classList.toggle('active', showVi);
+
+      // Progress bar & counter
+      const progress = ((currentIndex + 1) / sentences.length) * 100;
+      document.getElementById('progressBar').style.width = `${progress}%`;
+      document.getElementById('sentenceCounter').textContent = `Câu ${currentIndex + 1} / ${sentences.length}`;
+    }
+
+    function cleanTextForSpeech(text) {
+      if (document.getElementById('filterPrefix').checked) {
+        // Remove prefixes like "(男)：", "（男）：", "(大卫)：", "男：", "女：", etc.
+        return text.replace(/^(?:[\(（][^()（）]+[\)）]|男|女|Nam|Nữ|A|B)[：:\s]*/, '');
+      }
+      return text;
+    }
+
+    // Ước lượng số ký tự đã đọc dựa trên thời gian thực (fallback cho các giọng đọc không bắn sự kiện onboundary)
+    function estimateSpokenChars(text, elapsedMs, rate) {
+      const effectiveElapsed = Math.max(0, elapsedMs - 140);
+      if (effectiveElapsed <= 0) return 0;
+
+      let accMs = 0;
+      let idx = 0;
+      for (let i = 0; i < text.length; i++) {
+        const ch = text[i];
+        let charDuration = 260 / rate;
+        if (/[，、,：:]/.test(ch)) {
+          charDuration = 350 / rate;
+        } else if (/[。？！.?!；;]/.test(ch)) {
+          charDuration = 450 / rate;
+        } else if (/\s/.test(ch)) {
+          charDuration = 80 / rate;
+        }
+        if (accMs + charDuration > effectiveElapsed) {
+          idx = i;
+          break;
+        }
+        accMs += charDuration;
+        idx = i + 1;
+      }
+      // Lùi lại 1 ký tự đang đọc dở để khi tiếp tục không bị nuốt âm tiết
+      return Math.max(0, idx - 1);
+    }
+
+    function speakPromise(text, r = 1, repeats = 1) {
+      return new Promise((resolve) => {
+        if (isAborted) return resolve();
+
+        let currentOffset = 0;
+        let finished = false;
+
+        // Tìm vị trí ký tự có âm đọc cuối cùng (trước dấu câu cuối câu)
+        let lastPlayableIndex = Math.max(0, text.length - 1);
+        while (lastPlayableIndex > 0 && /[，。？！、：；,.?!:;\s]/.test(text[lastPlayableIndex])) {
+          lastPlayableIndex--;
+        }
+
+        function cleanupAndResolve() {
+          if (finished) return;
+          finished = true;
+          activePauseHandler = null;
+          activeResumeHandler = null;
+          activeAbortHandler = null;
+          resolve();
+        }
+
+        activeAbortHandler = () => {
+          cleanupAndResolve();
+        };
+
+        function speakSegment() {
+          if (isAborted || finished) {
+            return cleanupAndResolve();
+          }
+
+          // Bỏ qua các dấu câu hoặc khoảng trắng ở đầu đoạn cắt
+          while (currentOffset < text.length && /[，。？！、：；,.?!:;\s]/.test(text[currentOffset])) {
+            currentOffset++;
+          }
+
+          const subText = text.slice(currentOffset);
+          if (!subText) {
+            return cleanupAndResolve();
+          }
+
+          if (synth.speaking || synth.pending) {
+            synth.cancel();
+          }
+          if (synth.paused) {
+            synth.resume();
+          }
+
+          const utterance = new SpeechSynthesisUtterance(subText);
+          utterance.lang = 'zh-CN';
+          const rate = parseFloat(document.getElementById('speechRate').value) || 0.9;
+          utterance.rate = rate;
+
+          const voiceIdx = document.getElementById('voiceSelect').value;
+          if (voices.length > 0 && voiceIdx !== '' && voices[voiceIdx]) {
+            utterance.voice = voices[voiceIdx];
+          }
+
+          let segmentBoundaryIndex = 0;
+          let hasBoundary = false;
+          let segmentStartTime = performance.now();
+
+          utterance.onstart = () => {
+            segmentStartTime = performance.now();
+          };
+
+          utterance.onboundary = (e) => {
+            if (typeof e.charIndex === 'number') {
+              hasBoundary = true;
+              segmentBoundaryIndex = e.charIndex;
+            }
+          };
+
+          activePauseHandler = () => {
+            utterance._pausedByUser = true;
+            const elapsed = performance.now() - segmentStartTime;
+            const spokenInSegment = hasBoundary
+              ? segmentBoundaryIndex
+              : estimateSpokenChars(subText, elapsed, rate);
+
+            currentOffset = Math.min(currentOffset + spokenInSegment, lastPlayableIndex);
+            synth.cancel();
+
+            const badge = document.getElementById('statusBadge');
+            badge.className = 'status-badge';
+            badge.textContent = `⏸ Tạm dừng ở lần đọc ${r}/${repeats} (Bấm Tiếp tục để đọc nốt câu)`;
+          };
+
+          activeResumeHandler = () => {
+            const badge = document.getElementById('statusBadge');
+            badge.className = 'status-badge reading';
+            badge.textContent = currentOffset > 0
+              ? `🔊 Đang đọc tiếp lần ${r}/${repeats}...`
+              : `🔊 Đang đọc lần ${r}/${repeats}...`;
+            speakSegment();
+          };
+
+          utterance.onend = () => {
+            if (utterance._pausedByUser) return;
+            cleanupAndResolve();
+          };
+
+          utterance.onerror = (e) => {
+            if (utterance._pausedByUser) return;
+            console.warn('Speech error:', e);
+            cleanupAndResolve();
+          };
+
+          synth.speak(utterance);
+        }
+
+        if (isPaused) {
+          activeResumeHandler = () => {
+            const badge = document.getElementById('statusBadge');
+            badge.className = 'status-badge reading';
+            badge.textContent = `🔊 Đang đọc lần ${r}/${repeats}...`;
+            speakSegment();
+          };
+        } else {
+          speakSegment();
+        }
+      });
+    }
+
+    function countdownPromise(seconds, message, badgeClass) {
+      return new Promise((resolve) => {
+        if (isAborted) return resolve();
+        let remaining = seconds;
+        let finished = false;
+        const timerCircle = document.getElementById('timerCircle');
+        const timerText = document.getElementById('timerText');
+        const badge = document.getElementById('statusBadge');
+
+        function cleanupAndResolve() {
+          if (finished) return;
+          finished = true;
+          if (timerInterval) {
+            clearInterval(timerInterval);
+            timerInterval = null;
+          }
+          timerCircle.classList.remove('active');
+          timerText.textContent = '--';
+          activePauseHandler = null;
+          activeResumeHandler = null;
+          activeAbortHandler = null;
+          resolve();
+        }
+
+        activeAbortHandler = () => {
+          cleanupAndResolve();
+        };
+
+        activePauseHandler = () => {
+          timerCircle.classList.remove('active');
+          badge.className = 'status-badge';
+          badge.textContent = `⏸ Đã tạm dừng (Còn ${remaining}s nghỉ)`;
+        };
+
+        activeResumeHandler = () => {
+          timerCircle.classList.add('active');
+          badge.className = `status-badge ${badgeClass}`;
+          badge.textContent = `${message} (${remaining}s)`;
+          timerText.textContent = remaining;
+        };
+
+        if (!isPaused) {
+          timerCircle.classList.add('active');
+          badge.className = `status-badge ${badgeClass}`;
+          badge.textContent = `${message} (${remaining}s)`;
+          timerText.textContent = remaining;
+        } else {
+          activePauseHandler();
+          timerText.textContent = remaining;
+        }
+
+        timerInterval = setInterval(() => {
+          if (isAborted) {
+            return cleanupAndResolve();
+          }
+
+          if (isPaused) {
+            return;
+          }
+
+          remaining--;
+          if (remaining > 0) {
+            badge.textContent = `${message} (${remaining}s)`;
+            timerText.textContent = remaining;
+          } else {
+            cleanupAndResolve();
+          }
+        }, 1000);
+      });
+    }
+
+    async function playCurrentLoop() {
+      if (!isPlaying || currentIndex >= sentences.length) {
+        if (currentIndex >= sentences.length) {
+          finishLesson();
+        }
+        return;
+      }
+
+      updateDisplay();
+      const cur = sentences[currentIndex];
+      const speakText = cleanTextForSpeech(cur.chinese);
+
+      const repeats = parseInt(document.getElementById('repeatCount').value) || 2;
+      const pauseBetween = parseInt(document.getElementById('pauseBetweenRepeats').value) || 5;
+      const pauseWrite = parseInt(document.getElementById('pauseToWrite').value) || 5;
+
+      for (let r = 1; r <= repeats; r++) {
+        if (isAborted) return;
+
+        // Reading phase
+        if (!isPaused) {
+          const badge = document.getElementById('statusBadge');
+          badge.className = 'status-badge reading';
+          badge.textContent = `🔊 Đang đọc lần ${r}/${repeats}...`;
+        }
+
+        await speakPromise(speakText, r, repeats);
+        if (isAborted) return;
+
+        // If not the last repeat, pause short
+        if (r < repeats) {
+          await countdownPromise(pauseBetween, 'Nghỉ trước khi đọc lại', 'waiting');
+        }
+      }
+
+      if (isAborted) return;
+
+      // Pause long for writing/dictation
+      await countdownPromise(pauseWrite, '✍️ Thời gian chép vào vở', 'waiting');
+
+      if (isAborted) return;
+
+      // Auto move to next sentence
+      if (currentIndex < sentences.length - 1) {
+        currentIndex++;
+        playCurrentLoop();
+      } else {
+        finishLesson();
+      }
+    }
+
+    function togglePlay() {
+      if (sentences.length === 0) return;
+
+      if (isPlaying) {
+        pausePlay();
+      } else if (isPaused) {
+        resumePlay();
+      } else {
+        isPlaying = true;
+        isPaused = false;
+        isAborted = false;
+        const btn = document.getElementById('btnPlayPause');
+        btn.textContent = '⏸ Tạm dừng';
+        btn.style.background = 'linear-gradient(135deg, #f59e0b, #d97706)';
+        playCurrentLoop();
+      }
+    }
+
+    function pausePlay() {
+      if (!isPlaying) return;
+      isPlaying = false;
+      isPaused = true;
+
+      const btn = document.getElementById('btnPlayPause');
+      btn.textContent = '▶ Tiếp tục học';
+      btn.style.background = 'linear-gradient(135deg, #0284c7, #2563eb)';
+
+      if (activePauseHandler) {
+        activePauseHandler();
+      } else {
+        const badge = document.getElementById('statusBadge');
+        badge.className = 'status-badge';
+        badge.textContent = '⏸ Đã tạm dừng';
+      }
+    }
+
+    function resumePlay() {
+      if (!isPaused) return;
+      isPlaying = true;
+      isPaused = false;
+
+      const btn = document.getElementById('btnPlayPause');
+      btn.textContent = '⏸ Tạm dừng';
+      btn.style.background = 'linear-gradient(135deg, #f59e0b, #d97706)';
+
+      if (activeResumeHandler) {
+        activeResumeHandler();
+      } else {
+        playCurrentLoop();
+      }
+    }
+
+    function stopPlay(buttonLabel = '▶ Bắt đầu học') {
+      isPlaying = false;
+      isPaused = false;
+      isAborted = true;
+      synth.cancel();
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+      }
+      if (activeAbortHandler) {
+        activeAbortHandler();
+      }
+      activePauseHandler = null;
+      activeResumeHandler = null;
+      activeAbortHandler = null;
+
+      const btn = document.getElementById('btnPlayPause');
+      btn.textContent = buttonLabel;
+      btn.style.background = 'linear-gradient(135deg, #0284c7, #2563eb)';
+
+      const badge = document.getElementById('statusBadge');
+      badge.className = 'status-badge';
+      badge.textContent = 'Sẵn sàng';
+      document.getElementById('timerCircle').classList.remove('active');
+      document.getElementById('timerText').textContent = '--';
+    }
+
+    function finishLesson() {
+      stopPlay('▶ Học lại từ đầu');
+      const badge = document.getElementById('statusBadge');
+      badge.className = 'status-badge';
+      badge.textContent = '🎉 Đã hoàn thành bài học!';
+      currentIndex = 0;
+    }
+
+    function nextSentence() {
+      if (currentIndex < sentences.length - 1) {
+        stopPlay('▶ Tiếp tục học');
+        currentIndex++;
+        updateDisplay();
+      }
+    }
+
+    function prevSentence() {
+      if (currentIndex > 0) {
+        stopPlay('▶ Tiếp tục học');
+        currentIndex--;
+        updateDisplay();
+      }
+    }
+
+    function replayCurrent() {
+      stopPlay();
+      togglePlay();
+    }
+
+    window.onload = init;
+  </script>
+</body>
+</html>
